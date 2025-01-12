@@ -1,0 +1,15 @@
+alex@ubuntu24-pro:~$ uname -r
+6.8.0-51-generic
+
+alex@ubuntu24-pro:~$ ll linux-*
+-rw-rw-r-- 1 alex alex  13765362 ноя 26 14:10 linux-headers-6.12.0-061200_6.12.0-061200.202411220723_all.deb
+-rw-rw-r-- 1 alex alex   3543708 ноя 26 14:10 linux-headers-6.12.0-061200-generic_6.12.0-061200.202411220723_amd64.deb
+-rw-rw-r-- 1 alex alex  15554752 ноя 26 14:10 linux-image-unsigned-6.12.0-061200-generic_6.12.0-061200.202411220723_amd64.deb
+-rw-rw-r-- 1 alex alex 184197312 ноя 26 14:10 linux-modules-6.12.0-061200-generic_6.12.0-061200.202411220723_amd64.deb
+
+alex@ubuntu24-pro:~$ sudo apt install -y ./linux-*.deb
+
+alex@ubuntu24-pro:~$ shutdown -r now
+
+alex@ubuntu24-pro:~$ uname -r
+6.12.0-061200-generic
