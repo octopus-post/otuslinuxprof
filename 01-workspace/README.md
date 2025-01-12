@@ -11,7 +11,7 @@
 - Host OS: Garuda Linux Bird of Prey x86_64
 - Гипервизор: QEMU-KVM
 - Guest OS: Ubuntu 24.04
-- Версия Vagrant: 2.4.3 + plugin libvirt
+- Версия Vagrant: 2.4.3 + vagrant-libvirt plugin
 - Версия ansible: [core 2.18.1]
 
 
