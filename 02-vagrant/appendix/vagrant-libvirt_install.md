@@ -48,9 +48,21 @@ conflicting dependencies json (= 2.7.1) and json (= 2.9.0)
 ```
 
 #### Решение:
-Источник: [https://gitlab.archlinux.org/archlinux/packaging/packages/vagrant/-/issues/3](https://gitlab.archlinux.org/archlinux/packaging/packages/vagrant/-/issues/3)
+Источники:
 
-Запустить с параметром VAGRANT_DISABLE_STRICT_DEPENDENCY_ENFORCEMENT=1
+1. [https://gitlab.archlinux.org/archlinux/packaging/packages/vagrant/-/issues/3](https://gitlab.archlinux.org/archlinux/packaging/packages/vagrant/-/issues/3)
+2. [https://wiki.archlinux.org/title/Vagrant](https://wiki.archlinux.org/title/Vagrant)
+
+Вариант 1. Добавить параметр 
+```
+export VAGRANT_DISABLE_STRICT_DEPENDENCY_ENFORCEMENT=1
+```
+> If you have issues with dependency mismatch, the following environment variable can be set to ignore gem versions. 
+
+Вариант 2. Запустить с параметром
+```
+VAGRANT_DISABLE_STRICT_DEPENDENCY_ENFORCEMENT=1
+```
 
 > This isn't new though and predates this issue; it can be worked around with
 
