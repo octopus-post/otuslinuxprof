@@ -2,7 +2,9 @@
 1. _bad response Not Found 404 (https://gems.hashicorp.com/specs.4.8.gz)_
 
 ```bash
- $	vagrant plugin install vagrant-libvirt
+$ vagrant plugin install vagrant-libvirt
+```
+```
 Installing the 'vagrant-libvirt' plugin. This can take a few minutes...
 Vagrant failed to load a configured plugin source. This can be caused
 by a variety of issues including: transient connectivity issues, proxy
@@ -16,7 +18,7 @@ Source: https://gems.hashicorp.com/
 #### Решение:
 Источник: [https://discuss.hashicorp.com/t/vagrant-2-3-5-unable-to-install-plugins/53916](https://discuss.hashicorp.com/t/vagrant-2-3-5-unable-to-install-plugins/53916)
 
-Одним из обходных путей является изменение источников для установки:
+> Одним из обходных путей является изменение источников для установки:
 
 ```
 $ vagrant plugin install --plugin-clean-sources --plugin-source https://rubygems.org vagrant-libvirt
@@ -28,6 +30,8 @@ $ vagrant plugin install --plugin-clean-sources --plugin-source https://rubygems
 
 ```bash
 $ vagrant plugin install --plugin-clean-sources --plugin-source https://rubygems.org vagrant-libvirt
+```
+```
 Installing the 'vagrant-libvirt' plugin. This can take a few minutes...
 Vagrant failed to properly resolve required dependencies. These
 errors can commonly be caused by misconfigured plugin installations
@@ -46,10 +50,14 @@ conflicting dependencies json (= 2.7.1) and json (= 2.9.0)
 #### Решение:
 Источник: [https://gitlab.archlinux.org/archlinux/packaging/packages/vagrant/-/issues/3](https://gitlab.archlinux.org/archlinux/packaging/packages/vagrant/-/issues/3)
 
-This isn't new though and predates this issue ; it can be worked around with
+Запустить с параметром VAGRANT_DISABLE_STRICT_DEPENDENCY_ENFORCEMENT=1
+
+> This isn't new though and predates this issue; it can be worked around with
 
 ```bash
 $ VAGRANT_DISABLE_STRICT_DEPENDENCY_ENFORCEMENT=1 vagrant plugin install --plugin-clean-sources --plugin-source https://rubygems.org vagrant-libvirt
+```
+```
 Installing the 'vagrant-libvirt' plugin. This can take a few minutes...
 Fetching xml-simple-1.1.9.gem
 Fetching racc-1.8.1.gem
@@ -67,3 +75,4 @@ Fetching vagrant-libvirt-0.12.2.gem
 Installed the plugin 'vagrant-libvirt (0.12.2)'!
 ```
 
+---
