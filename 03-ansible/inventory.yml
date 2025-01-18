@@ -1,0 +1,17 @@
+otus_basic:
+  hosts:
+    192.168.122.53
+    192.168.122.153
+    192.168.122.155
+    192.168.122.201
+    192.168.122.211
+otus_prof:
+  hosts:
+    192.168.122.87
+otus_web:
+  hosts:
+    192.168.122.87
+otus_hosts:
+    children:
+      otus_prof:
+      otus_basic:
