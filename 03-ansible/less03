@@ -13,6 +13,17 @@ ansible [core 2.18.1]
 # не рекомендуется располагать в /etc/ansible/
 ansible-config init --disable > ansible.cfg
 
+# список доступных палгинов inventory
+ansible-doc -t inventory -l
+
+*****
+# получить документацию и примеров по конкретному плагину
+ansible-doc -t inventory amazon.aws.aws_ec2
+
+# установите коллекцию Ansible Galaxy amazon.aws
+ansible-galaxy collection install amazon.aws
+******
+
 # выполнение команды с помощью модуля ping
 ansible -m ping -i inventory all
 
@@ -77,7 +88,7 @@ ansible-playbook site.yml - inventory.yml --syntax-check
 # выполнить тестирование, параметр --check
 
 # запуск плейбука (набор хостов можно указать в файле плейбука)
-ansible-playbook less03_playbook.yml - inventory.yml [набор_хостов]
+ansible-playbook less03_playbook.yml -i inventory.yml [набор_хостов]
 
-ansible-playbook less03_playbook.yml - inventory.yml otus_web
+ansible-playbook less03_playbook.yml -i inventory.yml otus_web
 
