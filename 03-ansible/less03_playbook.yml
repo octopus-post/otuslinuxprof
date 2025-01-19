@@ -1,4 +1,5 @@
-- name: Start NGNIX server
+---
+- name: Start NGINX server
 #  gather_facts: false
   hosts: otus_web
   become: true
@@ -7,13 +8,13 @@
 
   tasks:
     - name: update
-      apt:
+      ansible.builtin.apt:
         update_cache=yes
       tags:
         - update apt
 
     - name: install nginx
-      apt:
+      ansible.builtin.apt:
         name: nginx
         state: latest
       notify:
@@ -22,8 +23,8 @@
         - nginx-package
 
     - name: Update nginx config from template
-      template:
-        src: files/nginx.conf.j2
+      ansible.builtin.template:
+        src: template/nginx.conf.j2
         dest: /etc/nginx/nginx.conf
       notify:
         - reload nginx
@@ -32,11 +33,12 @@
 
   handlers:
     - name: restart nginx
-      systemd:
+      ansible.builtin.systemd:
         name: nginx
         state: restarted
         enabled: yes
     - name: reload nginx
-      systemd:
+      ansible.builtin.systemd:
         name: nginx
         state: reloaded
+...

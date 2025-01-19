@@ -15,7 +15,7 @@
 1. _ansible.cfg_ - файл конфигурации, расположен в домашнем каталоге.
 2. _inventory.yml_ - наборы хостов.
 3. _less03_playbook.yml_ - плейбук дз.
-4. _./files/nginx.conf.j2_  - шаблон файла конфигурации nginx
+4. _./templates/nginx.conf.j2_  - шаблон файла конфигурации nginx
 
 Плейбук обновляет пакеты, устанавливает nginx, обновляет конфигурацию nginx из шаблона, перезапускает сервис nginx.
 ```bash
@@ -23,5 +23,5 @@ ansible-playbook less03_playbook.yml
 ```
 > *Задание выполнено без использования Vagrant*
 
-##### Appendixs:
+##### Appendix:
 [https://docs.ansible.com/ansible/latest/reference_appendices/config.html](https://docs.ansible.com/ansible/latest/reference_appendices/config.html)

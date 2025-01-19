@@ -9,11 +9,11 @@ ansible [core 2.18.1]
   jinja version = 3.1.5
   libyaml = True
 
-# инциализация файла cfg
+# инициализация файла cfg
 # не рекомендуется располагать в /etc/ansible/
 ansible-config init --disable > ansible.cfg
 
-# список доступных палгинов inventory
+# список доступных плагинов inventory
 ansible-doc -t inventory -l
 
 *****
