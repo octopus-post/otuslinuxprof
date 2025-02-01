@@ -1,0 +1,16 @@
+---
+#  в одном playbook для разных групп хостов разные play
+- hosts: web
+  tasks:
+  - name: install latest apache
+    apt:
+      name: httpd
+      state: latest
+
+- hosts: all
+  tasks:
+  - name: update packages
+    apt:
+      name: '*'
+      state: latest
+...

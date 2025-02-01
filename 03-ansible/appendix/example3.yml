@@ -1,0 +1,16 @@
+---
+- hosts: reddit_app
+  remote_user: root
+  tasks:
+  - name: clone project repo
+    git:
+      repo: 'https://github.com/express42/reggit.git'
+      dest: /srv/reddit-app
+- hosts:
+  remote_user: root
+  tasks:
+    - name: create app db
+      postgresql_db:
+        name: reddit_main
+        encoding: UTF-8
+...
