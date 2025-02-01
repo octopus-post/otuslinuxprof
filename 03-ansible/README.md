@@ -23,5 +23,6 @@ ansible-playbook less03_playbook.yml
 ```
 > *Задание выполнено без использования Vagrant*
 
-##### Appendix:
+##### Links:
 [https://docs.ansible.com/ansible/latest/reference_appendices/config.html](https://docs.ansible.com/ansible/latest/reference_appendices/config.html)
+[https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html](https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html)
