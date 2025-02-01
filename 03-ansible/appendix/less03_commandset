@@ -51,8 +51,7 @@ usage: ansible-inventory [-h] [--version] [-v] [-i INVENTORY] [-l SUBSET] [--vau
                          [--playbook-dir BASEDIR] [-e EXTRA_VARS] [--list] [--host HOST] [--graph] [-y] [--toml] [--vars] [--export]
                          [--output OUTPUT_FILE]
                          [group]
-
-
+--------------------------------------------------
 # VARIABLES пример использования
 - hosts: reddit_app
   vars:
@@ -70,6 +69,8 @@ ansible -m setup -a 'filter=ansible_mounts' otus_web
 - name: Install Systemd files 
   include: inst_systemd.yml
   when: ansible_service_mgr == 'systemd' # переменная из фактов
+
+---------------------------------------------------
 
 #****Практические задания****************************************************************************
 ansible.cfg
@@ -140,10 +141,9 @@ ansible-inventory -i ./inventory.yml --graph otus_web
 
 # проверка синтаксиса yaml
 ansible-playbook site.yml - inventory.yml --syntax-check
-# выполнить тестирование, параметр --check
-
+# выполнить тестирование, параметр --check (сухой прогон)
+ansible-playbook site.yml - inventory.yml --check
 # запуск плейбука (набор хостов можно указать в файле плейбука)
 ansible-playbook less03_playbook.yml -i inventory.yml [набор_хостов]
-
 ansible-playbook less03_playbook.yml -i inventory.yml otus_web
 
