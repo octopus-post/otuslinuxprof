@@ -52,6 +52,25 @@ usage: ansible-inventory [-h] [--version] [-v] [-i INVENTORY] [-l SUBSET] [--vau
                          [--output OUTPUT_FILE]
                          [group]
 
+
+# VARIABLES пример использования
+- hosts: reddit_app
+  vars:
+    active: yes
+    app_path: '{{ base_dir }}/reddit_app'
+---------------------------------------------------
+# FACTS пример использования
+# вывод набора facts с помощью модуля SETUP
+ansible -m setup -i inventory.yml otus_web
+# фильтр по смонтированным устройствам
+ansible -m setup -a 'filter=ansible_mounts' otus_web
+
+- include: install.deb.yml
+  when: ansible_os_famaly == 'Debian' # переменная из фактов
+- name: Install Systemd files 
+  include: inst_systemd.yml
+  when: ansible_service_mgr == 'systemd' # переменная из фактов
+
 #****Практические задания****************************************************************************
 ansible.cfg
 *****
