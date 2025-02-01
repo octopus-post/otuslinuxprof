@@ -1,0 +1,42 @@
+---
+# пример использования двух play, так как задачи выполняются для разных хостов
+- name: Enable intranet service
+  hosts: serverc.lab.example.com
+  become: true
+  tasks:
+    - name: Latest version of httpd and firewalld installed
+      apt:
+        name:
+          - httpd
+          - firewalld
+        state: latest
+    - name: Test html page is installed
+      copy:
+        content: "Welcome to the REDOS intranet!\n"
+        dest: /var/www/html/index.html
+    - name: Firewall enabled and running
+      service:
+        name: firewalld
+        enabled: true
+        state: started
+    - name: Firewall permits access to httpd service
+      ansible.posix.firewalld:
+        permanent: yes
+        immediate: yes
+        service: http 
+        state: enabled
+    - name: Web server enabled and started
+      service:
+        name: httpd
+        enabled: true
+        state: started
+- name: Test intranet web server
+  hosts: localhost
+  become: false
+  tasks:
+    - name: Connect to intranet web server
+      ansible.builtin.uri:
+        url: http://serverc.lab.example.com
+        return_content: yes 
+        status_code: 200
+
