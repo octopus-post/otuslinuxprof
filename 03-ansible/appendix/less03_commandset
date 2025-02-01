@@ -12,6 +12,17 @@ ansible [core 2.18.1]
 # инициализация файла cfg
 # не рекомендуется располагать в /etc/ansible/
 ansible-config init --disable > ansible.cfg
+ansible-config view
+# найти каталог расположения python и указать в конфиге в разделе default
+whereis python
+nano ./ansible.cfg 
+
+[defaults]
+remote_user=root
+interpreter_python=/usr/bin/python
+private_key_file=/root/.ssh/otus_rsa
+inventory = ./inventory.yml
+-------------------------
 
 # список доступных плагинов inventory
 ansible-doc -t inventory -l
@@ -22,8 +33,8 @@ ansible-doc -t inventory amazon.aws.aws_ec2
 
 # установите коллекцию Ansible Galaxy amazon.aws
 ansible-galaxy collection install amazon.aws
-******
 
+------------------------
 # выполнение команды с помощью модуля ping
 ansible -m ping -i inventory all
 
@@ -68,6 +79,27 @@ ansible -m shell -a "date" -i inventory.yml otus_prof
 # модуль SETUP - вывод всех параметров для хостов
 [root@smith ansible]# ansible -m setup -i inventory.yml otus_prof
 
+# вывод содержимого файла inventory в формате yaml
+ansible-inventory -i ./inventory.yml --list
+{
+    "_meta": {
+        "hostvars": {}
+    },
+    "all": {
+        "children": [
+            "ungrouped",
+            "otus_web",
+            "otus_hosts"
+        ]
+    },
+    "otus_basic": {
+        "hosts": [
+            "192.168.122.53 192.168.122.153 192.168.122.155 192.168.122.201 192.168.122.211"
+        ]
+    },
+.....
+
+# либо для конкретной группы
 ansible-inventory -i ./inventory.yml --graph
 @all:
   |--@ungrouped:
@@ -78,6 +110,10 @@ ansible-inventory -i ./inventory.yml --graph
   |  |  |--192.168.122.87
   |  |--@otus_basic:
   |  |  |--192.168.122.53 192.168.122.153 192.168.122.155 192.168.122.201 192.168.122.211
+
+
+ansible-inventory -i ./inventory.yml --graph otus_web
+--------------------------
 
 [root@smith ansible]# ansible-inventory -i ./inventory.yml otus_web --graph
 @otus_web:
