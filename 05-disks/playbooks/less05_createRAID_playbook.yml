@@ -1,0 +1,72 @@
+---
+- name: Create RAID-1
+  gather_facts: false
+  hosts: otus_web
+  become: true
+  vars: 
+    md_raid_path: /dev/md127
+    md_raid_name: mdraid1
+    md_disk1_path: /dev/vdd
+    md_disk2_path: /dev/vde
+    md_disk3_path: /dev/vdf
+    fstype: ext4
+    mount_point: /mnt/part
+
+  tasks:
+    - name: Зануляем суперблоки
+      ansible.builtin.shell: "mdadm --zero-superblock --force /dev/vd[d-f]"
+      tags:
+        -mdadm
+    - name: Создание массива RAID-1 из двух дисков
+      ansible.builtin.command: 
+        mdadm --create --verbose --run {{ md_raid_path }} --name={{ md_raid_name }} -l 1 -n 2 {{ md_disk1_path }} {{ md_disk2_path }} --spare-devices=1 {{ md_disk3_path }}
+      tags:
+        - mdadm
+#    - name: Создание раздела GPT
+#      community.general.parted:
+#        device: '{{ md_raid_path }}'
+#        label: gpt
+#        number: 1
+#        state: present
+#      tags: 
+#        - mdadm parted
+    - name: Создание партиций
+      community.general.parted:
+        device: "{{ md_raid_path }}"
+        part_type: primary
+        label: gpt
+        number: "{{ item }}"
+        fs_type: '{{ fstype }}'
+        part_start: "{{ (item-1)*20 | int | abs }}%"
+        part_end: "{{ (item)*20 | int | abs }}%"
+        resize: true
+        state: present
+      loop: "{{ range(1, 6) }}"
+#    - name: Read device information (always use unit when probing)
+#      community.general.parted: 
+#        device="{{ md_raid_path }}"
+#      register: md_info
+    - name: Create fs 
+      community.general.filesystem:
+        dev: "{{ md_raid_path }}p{{ item }}"
+        fstype: '{{ fstype }}'
+        state: present
+      loop: "{{ range(1, 6) }}"
+
+    - name: Создание каталогов для монтирования
+      ansible.builtin.file:
+        path: '{{ mount_point }}{{ item }}'
+        state: directory
+      loop: "{{ range(1, 6) }}"
+      tags:
+        - mdadm create dir
+    - name: Монтирование разделов по каталогам
+      ansible.posix.mount:
+        src: '{{ md_raid_path }}p{{ item }}'
+        path: '{{ mount_point }}{{ item }}'
+        fstype: '{{ fstype }}'
+        state: mounted
+      loop: "{{ range(1, 6) }}"
+      tags:
+        - mdadm mount fs  
+...

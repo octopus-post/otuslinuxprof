@@ -1,0 +1,42 @@
+commands:
+
+fdisk -l /dev/sdX   
+cat /proc/mdstat            - состояние массива
+
+# создание массива. автоматически выполнится rsync
+mdadm --create /dev/mdraid1 -l 1 -n 2 /dev/sda1 /dev/sda2
+cat /proc/mdstat
+fgisk -l /dev/mdraid1
+# создание fs
+mkfs.ext4 /dev/mdraid1
+# монтирование
+mount /dev/mdraid1 /mnt/disk01
+# проверка
+df -hT
+# монтирование в fstab производить по UUID
+
+####################################
+##### ломаем raid
+# получить детальную информацию о массиве (должен быть в состоянии state: clean)
+mdadm -D /dev/mdraid1
+# пометить sda1 как сбойный
+mdadm --manage /dev/mdraid1 --fail /dev/sda1
+# выполнить удаление sda1 из массива
+mdadm --manage /dev/mdraid1 --remove /dev/sda1
+# проверить диск на ошибки. если без сбоев, то попробовать повторно добавить в массив
+
+# добавление в raid другого диска для замены сбойного и пересборка массива (выполнится rsync)
+mdadm --manage /dev/mdraid1 --add /dev/sda3
+
+####################################
+##### сборка массива из одного диска с последующим переносом данных с другого диска
+# собрать массив из одного диска (в состояние state: clean, degraded)
+mdadm --create /dev/mdraid2 -l 1 -n 2 /dev/sda1 missing
+# показать состояние массива. диск2 - removed
+mdadm -D /dev/mdraid2
+# создание fs
+mkfs.ext4 /dev/mdraid2
+mount /dev/mdraid2 /mnt/disk02
+# скопировать данные с исходного диска и добавить диск в raid-массив
+cp /mnt/01 /mnt/disk02
+mdadm --manage /dev/mdraid2 --add /dev/sda1

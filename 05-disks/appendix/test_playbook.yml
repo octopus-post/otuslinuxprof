@@ -1,0 +1,21 @@
+---
+- name: TEST
+  gather_facts: false
+  hosts: otus_web
+  become: true
+  tasks:
+#  - name: Register loop output as a variable
+#    ansible.builtin.shell: "echo {{ item }} $[{{ item }}-1]"
+#    ansible.builtin.file:
+#      path: /mnt/part{{ item | int - 1 }}
+#      state: directory
+#      owner: root
+#      group: root
+#      mode: '0755'
+#    loop: "{{ range(1, 6) }}"
+#    register: echo
+  - name: debug
+    ansible.builtin.debug: msg={{ (item+1)*100/5 | int | abs  }}
+    loop: "{{ range(1, 6) }}"
+...
+
