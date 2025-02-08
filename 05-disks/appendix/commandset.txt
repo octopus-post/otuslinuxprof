@@ -3,6 +3,8 @@ commands:
 fdisk -l /dev/sdX   
 cat /proc/mdstat            - состояние массива
 
+#занулить суперблок
+ansible -m shell -a "mdadm --zero-superblock --force /dev/vd[b-f]" -i ./inventory.yml otus_web
 # создание массива. автоматически выполнится rsync
 mdadm --create /dev/mdraid1 -l 1 -n 2 /dev/sda1 /dev/sda2
 cat /proc/mdstat
@@ -40,3 +42,10 @@ mount /dev/mdraid2 /mnt/disk02
 # скопировать данные с исходного диска и добавить диск в raid-массив
 cp /mnt/01 /mnt/disk02
 mdadm --manage /dev/mdraid2 --add /dev/sda1
+####################################
+Удаление raid массива
+Останавливаем массив /dev/md2:
+mdadm -S /dev/md2
+Удаляем суперблоки на всех дисках бывшего массива и почистим диск:
+mdadm --zero-superblock /dev/nvme1n1p1
+wipefs --all --force /dev/nvme1n1p1
