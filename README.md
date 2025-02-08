@@ -7,6 +7,7 @@
 | 2. Vagrant | 02-vagrant|
 | 3. Ansible | 03-ansible|
 | 5. Дисковая подсистема | 05-disks |
+| 6. Файловые системы и LVM-1| 06-lvm |
 
 
 

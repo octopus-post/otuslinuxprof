@@ -3,7 +3,7 @@
   gather_facts: false
   hosts: otus_web
   become: true
-  vars: 
+  vars:
     md_raid_path: /dev/md127
     md_raid_name: mdraid1
     md_disk1_path: /dev/vdd
@@ -15,11 +15,15 @@
   tasks:
     - name: Зануляем суперблоки
       ansible.builtin.shell: "mdadm --zero-superblock --force /dev/vd[d-f]"
+      register: my_output # <- Registers the command output.
+      changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
       tags:
         -mdadm
     - name: Создание массива RAID-1 из двух дисков
-      ansible.builtin.command: 
+      ansible.builtin.command:
         mdadm --create --verbose --run {{ md_raid_path }} --name={{ md_raid_name }} -l 1 -n 2 {{ md_disk1_path }} {{ md_disk2_path }} --spare-devices=1 {{ md_disk3_path }}
+      register: my_output # <- Registers the command output.
+      changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
       tags:
         - mdadm
 #    - name: Создание раздела GPT
@@ -28,7 +32,7 @@
 #        label: gpt
 #        number: 1
 #        state: present
-#      tags: 
+#      tags:
 #        - mdadm parted
     - name: Создание партиций
       community.general.parted:
@@ -38,15 +42,15 @@
         number: "{{ item }}"
         fs_type: '{{ fstype }}'
         part_start: "{{ (item-1)*20 | int | abs }}%"
-        part_end: "{{ (item)*20 | int | abs }}%"
+        part_end: "{{ item*20 | int | abs }}%"
         resize: true
         state: present
       loop: "{{ range(1, 6) }}"
 #    - name: Read device information (always use unit when probing)
-#      community.general.parted: 
+#      community.general.parted:
 #        device="{{ md_raid_path }}"
 #      register: md_info
-    - name: Create fs 
+    - name: Create fs
       community.general.filesystem:
         dev: "{{ md_raid_path }}p{{ item }}"
         fstype: '{{ fstype }}'
@@ -57,6 +61,7 @@
       ansible.builtin.file:
         path: '{{ mount_point }}{{ item }}'
         state: directory
+        mode: "0600"
       loop: "{{ range(1, 6) }}"
       tags:
         - mdadm create dir
@@ -68,5 +73,5 @@
         state: mounted
       loop: "{{ range(1, 6) }}"
       tags:
-        - mdadm mount fs  
+        - mdadm mount fs
 ...
