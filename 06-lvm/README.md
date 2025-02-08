@@ -30,6 +30,8 @@ _Логировать работу можно с помощью утилиты s
 ### Комментарии:
 
 Выполнение ДЗ представлено в файле _less07_command_log.txt_
+    
+> _Так как /boot был изначально смонтирован на отдельный диск vda2 его можно было не копировать при выполнении задания_
 
 ### Links:
 [https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/logical_volume_manager_administration/index](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/logical_volume_manager_administration/index)
