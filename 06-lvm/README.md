@@ -29,7 +29,7 @@ _Логировать работу можно с помощью утилиты s
 
 ### Комментарии:
 
-Выполнение ДЗ представлено в виде листинга в файле _less07_command_log.txt_
+Выполнение ДЗ представлено в файле _less07_command_log.txt_
 
 ### Links:
 [https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/logical_volume_manager_administration/index](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/logical_volume_manager_administration/index)
