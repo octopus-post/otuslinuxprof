@@ -1,0 +1,481 @@
+Script started on 2025-02-09 08:34:34+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="150" LINES="50"]
+
+# вывести список всех дисков
+root@ubuntu24-pro:/home/alex# lsblk
+NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sr0                        11:0    1 1024M  0 rom  
+vda                       253:0    0   20G  0 disk 
+├─vda1                    253:1    0    1M  0 part 
+├─vda2                    253:2    0  1,8G  0 part /boot
+└─vda3                    253:3    0 18,2G  0 part 
+  └─ubuntu--vg-ubuntu--lv 252:0    0   10G  0 lvm  /
+vdb                       253:16   0    2G  0 disk 
+vdc                       253:32   0    2G  0 disk 
+vdd                       253:48   0    2G  0 disk 
+vde                       253:64   0    2G  0 disk 
+vdf                       253:80   0    2G  0 disk 
+vdg                       253:96   0    2G  0 disk 
+vdh                       253:112  0    2G  0 disk 
+vdi                       253:128  0    2G  0 disk 
+
+# создать 4 пула из двух дисков в raid1
+root@ubuntu24-pro:/home/alex# zpool create less08_pool mirror /dev/vdb /dev/vdc
+root@ubuntu24-pro:/home/alex# zpool list
+NAME          SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+less08_pool  1.88G   106K  1.87G        -         -     0%     0%  1.00x    ONLINE  -
+root@ubuntu24-pro:/home/alex# zpool create less08_pool2 mirror /dev/vdd /dev/vde
+root@ubuntu24-pro:/home/alex# zpool create less08_pool3 mirror /dev/vdf /dev/vdg
+root@ubuntu24-pro:/home/alex# zpool create less08_pool4 mirror /dev/vdh /dev/vdi
+
+# получить информацию о всех пулах
+root@ubuntu24-pro:/home/alex# zpool list
+NAME           SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+less08_pool   1.88G   106K  1.87G        -         -     0%     0%  1.00x    ONLINE  -
+less08_pool2  1.88G   106K  1.87G        -         -     0%     0%  1.00x    ONLINE  -
+less08_pool3  1.88G   112K  1.87G        -         -     0%     0%  1.00x    ONLINE  -
+less08_pool4  1.88G   164K  1.87G        -         -     0%     0%  1.00x    ONLINE  -
+
+# получить информацию с помощью метода status (информация о составе блочных устройств, состояние сканирования, ошибки чтения/записи, хэш-сумма)
+root@ubuntu24-pro:/home/alex# zpool status
+  pool: less08_pool
+ state: ONLINE
+config:
+
+	NAME         STATE     READ WRITE CKSUM
+	less08_pool  ONLINE       0     0     0
+	  mirror-0   ONLINE       0     0     0
+	    vdb      ONLINE       0     0     0
+	    vdc      ONLINE       0     0     0
+
+errors: No known data errors
+
+  pool: less08_pool2
+ state: ONLINE
+config:
+
+	NAME          STATE     READ WRITE CKSUM
+	less08_pool2  ONLINE       0     0     0
+	  mirror-0    ONLINE       0     0     0
+	    vdd       ONLINE       0     0     0
+	    vde       ONLINE       0     0     0
+
+errors: No known data errors
+
+  pool: less08_pool3
+ state: ONLINE
+config:
+
+	NAME          STATE     READ WRITE CKSUM
+	less08_pool3  ONLINE       0     0     0
+	  mirror-0    ONLINE       0     0     0
+	    vdf       ONLINE       0     0     0
+	    vdg       ONLINE       0     0     0
+
+errors: No known data errors
+
+  pool: less08_pool4
+ state: ONLINE
+config:
+
+	NAME          STATE     READ WRITE CKSUM
+	less08_pool4  ONLINE       0     0     0
+	  mirror-0    ONLINE       0     0     0
+	    vdh       ONLINE       0     0     0
+	    vdi       ONLINE       0     0     0
+
+errors: No known data errors
+
+# добавить в пулы алгоритмы сжатия (применяется к файлам только после включения)
+root@ubuntu24-pro:/home/alex# zfs set compession=lzjb less08_pool
+root@ubuntu24-pro:/home/alex# zfs set compression=lz4 less08_pool2
+root@ubuntu24-pro:/home/alex# zfs set compression=gzip-9 less08_pool3
+root@ubuntu24-pro:/home/alex# zfs set compression=яду less08_pool4
+root@ubuntu24-pro:/home/alex# zfs get all|grep compression
+less08_pool   compression           lzjb                       local
+less08_pool2  compression           lz4                        local
+less08_pool3  compression           gzip-9                     local
+less08_pool4  compression           zle                        local
+
+# загрузить файл pg2600.converter.log во все пулы
+root@ubuntu24-pro:/home/alex# wget -P /less08_pool https://gutenberg.org/cache/epub/2600/pg2600.converter.log
+root@ubuntu24-pro:/home/alex# for i in {2..4}; do wget -P /less08_pool$i https://gutenberg.org/cache/epub/2600/pg2600.converter.log; done
+--2025-02-09 08:44:10--  https://gutenberg.org/cache/epub/2600/pg2600.converter.log
+Resolving gutenberg.org (gutenberg.org)... 152.19.134.47, 2610:28:3090:3000:0:bad:cafe:47
+Connecting to gutenberg.org (gutenberg.org)|152.19.134.47|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 41123477 (39M) [text/plain]
+Saving to: ‘/less08_pool/pg2600.converter.log’
+
+
+pg2600.converter.log                    0%[                                                                        ]       0  --.-KB/s               
+pg2600.converter.log                    0%[                                                                        ]  57,55K   169KB/s               
+pg2600.converter.log                    0%[                                                                        ] 218,12K   390KB/s               
+pg2600.converter.log                    1%[                                                                        ] 489,05K   545KB/s               
+pg2600.converter.log                    1%[>                                                                       ] 744,05K   567KB/s               
+pg2600.converter.log                    6%[===>                                                                    ]   2,41M  1,46MB/s               
+pg2600.converter.log                    7%[====>                                                                   ]   3,06M  1,66MB/s               
+pg2600.converter.log                    9%[=====>                                                                  ]   3,75M  1,83MB/s               
+pg2600.converter.log                   11%[=======>                                                                ]   4,48M  1,99MB/s               
+pg2600.converter.log                   13%[========>                                                               ]   5,22M  2,13MB/s               
+pg2600.converter.log                   14%[=========>                                                              ]   5,85M  2,17MB/s               
+pg2600.converter.log                   16%[==========>                                                             ]   6,48M  2,20MB/s               
+pg2600.converter.log                   18%[============>                                                           ]   7,23M  2,30MB/s    eta 14s    
+pg2600.converter.log                   20%[=============>                                                          ]   8,03M  2,39MB/s    eta 14s    
+pg2600.converter.log                   22%[===============>                                                        ]   8,83M  2,49MB/s    eta 14s    
+pg2600.converter.log                   24%[================>                                                       ]   9,66M  2,57MB/s    eta 14s    
+pg2600.converter.log                   26%[==================>                                                     ]  10,39M  2,60MB/s    eta 14s    
+pg2600.converter.log                   28%[===================>                                                    ]  11,09M  2,82MB/s    eta 11s    
+pg2600.converter.log                   30%[====================>                                                   ]  11,90M  3,00MB/s    eta 11s    
+pg2600.converter.log                   32%[======================>                                                 ]  12,73M  3,17MB/s    eta 11s    
+pg2600.converter.log                   34%[=======================>                                                ]  13,57M  3,31MB/s    eta 11s    
+pg2600.converter.log                   36%[=========================>                                              ]  14,42M  3,66MB/s    eta 11s    
+pg2600.converter.log                   38%[===========================>                                            ]  15,28M  3,48MB/s    eta 8s     
+pg2600.converter.log                   40%[============================>                                           ]  16,01M  3,51MB/s    eta 8s     
+pg2600.converter.log                   42%[=============================>                                          ]  16,85M  3,57MB/s    eta 8s     
+pg2600.converter.log                   45%[===============================>                                        ]  17,71M  3,63MB/s    eta 8s     
+pg2600.converter.log                   47%[=================================>                                      ]  18,56M  3,69MB/s    eta 8s     
+pg2600.converter.log                   49%[==================================>                                     ]  19,43M  3,75MB/s    eta 6s     
+pg2600.converter.log                   51%[====================================>                                   ]  20,32M  3,81MB/s    eta 6s     
+pg2600.converter.log                   53%[=====================================>                                  ]  21,10M  3,76MB/s    eta 6s     
+pg2600.converter.log                   55%[=======================================>                                ]  21,96M  3,80MB/s    eta 6s     
+pg2600.converter.log                   58%[========================================>                               ]  22,81M  3,84MB/s    eta 6s     
+pg2600.converter.log                   60%[==========================================>                             ]  23,70M  3,88MB/s    eta 5s     
+pg2600.converter.log                   62%[============================================>                           ]  24,57M  3,92MB/s    eta 5s     
+pg2600.converter.log                   64%[=============================================>                          ]  25,44M  3,96MB/s    eta 5s     
+pg2600.converter.log                   66%[===============================================>                        ]  26,25M  3,92MB/s    eta 5s     
+pg2600.converter.log                   68%[================================================>                       ]  27,00M  3,90MB/s    eta 5s     
+pg2600.converter.log                   70%[==================================================>                     ]  27,82M  3,92MB/s    eta 4s     
+pg2600.converter.log                   73%[===================================================>                    ]  28,71M  3,95MB/s    eta 4s     
+pg2600.converter.log                   75%[=====================================================>                  ]  29,57M  3,98MB/s    eta 4s     
+pg2600.converter.log                   77%[======================================================>                 ]  30,42M  4,00MB/s    eta 4s     
+pg2600.converter.log                   79%[========================================================>               ]  31,29M  4,03MB/s    eta 4s     
+pg2600.converter.log                   81%[=========================================================>              ]  32,13M  4,03MB/s    eta 2s     
+pg2600.converter.log                   83%[===========================================================>            ]  32,88M  3,94MB/s    eta 2s     
+pg2600.converter.log                   85%[============================================================>           ]  33,67M  3,95MB/s    eta 2s     
+pg2600.converter.log                   88%[==============================================================>         ]  34,56M  3,97MB/s    eta 2s     
+pg2600.converter.log                   90%[================================================================>       ]  35,46M  4,00MB/s    eta 2s     
+pg2600.converter.log                   92%[=================================================================>      ]  36,37M  4,03MB/s    eta 1s     
+pg2600.converter.log                   94%[===================================================================>    ]  37,24M  4,05MB/s    eta 1s     
+pg2600.converter.log                   97%[====================================================================>   ]  38,06M  3,97MB/s    eta 1s     
+pg2600.converter.log                   99%[======================================================================> ]  38,83M  3,93MB/s    eta 1s     
+pg2600.converter.log                  100%[=======================================================================>]  39,22M  3,98MB/s    in 11s     
+
+2025-02-09 08:44:22 (3,44 MB/s) - ‘/less08_pool/pg2600.converter.log’ saved [41123477/41123477]
+
+# проверить наличие файла во всех пулах
+root@ubuntu24-pro:/home/alex# ll /less08_pool*
+/less08_pool:
+total 22100
+drwxr-xr-x  2 root root        3 фев  9 08:44 
+drwxr-xr-x 27 root root     4096 фев  9 08:37 
+-rw-r--r--  1 root root 41123477 фев  2 08:31 pg2600.converter.log
+
+/less08_pool2:
+total 18011
+drwxr-xr-x  2 root root        3 фев  9 08:45 
+drwxr-xr-x 27 root root     4096 фев  9 08:37 
+-rw-r--r--  1 root root 41123477 фев  2 08:31 pg2600.converter.log
+
+/less08_pool3:
+total 10970
+drwxr-xr-x  2 root root        3 фев  9 08:45 
+drwxr-xr-x 27 root root     4096 фев  9 08:37 
+-rw-r--r--  1 root root 41123477 фев  2 08:31 pg2600.converter.log
+
+/less08_pool4:
+total 40193
+drwxr-xr-x  2 root root        3 фев  9 08:45 
+drwxr-xr-x 27 root root     4096 фев  9 08:37 
+-rw-r--r--  1 root root 41123477 фев  2 08:31 pg2600.converter.log
+
+# проверить степень сжатия и занимаемое место (less08_pool3  10.9M  1.74G  10.7M, compressratio 3.65x)
+root@ubuntu24-pro:/home/alex# zfs list
+NAME           USED  AVAIL  REFER  MOUNTPOINT
+less08_pool   21.7M  1.73G  21.6M  /less08_pool
+less08_pool2  17.7M  1.73G  17.6M  /less08_pool2
+less08_pool3  10.9M  1.74G  10.7M  /less08_pool3
+less08_pool4  39.4M  1.71G  39.3M  /less08_pool4
+root@ubuntu24-pro:/home/alex# zfs get all|grep compressratio|grep -v ref
+less08_pool   compressratio         1.81x                      -
+less08_pool2  compressratio         2.23x                      -
+less08_pool3  compressratio         3.65x                      -
+less08_pool4  compressratio         1.00x                      -
+
+#################### Определение настроек пула #########################
+
+root@ubuntu24-pro:/home/alex# wget -O archive.tar.gz --no-check-certificate 'https://drive.usercontent.google.com/download?id=1MvrcEp-WgAQe57aDEzxSRal[27m[7mP[27m[7mAwbNN1Bb&export=download'
+--2025-02-09 08:52:06--  https://drive.usercontent.google.com/download?id=1MvrcEp-WgAQe57aDEzxSRalPAwbNN1Bb&export=download
+Resolving drive.usercontent.google.com (drive.usercontent.google.com)... 142.250.74.161, 2a00:1450:400f:805::2001
+Connecting to drive.usercontent.google.com (drive.usercontent.google.com)|142.250.74.161|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 7275140 (6,9M) [application/octet-stream]
+Saving to: ‘archive.tar.gz’
+archive.tar.gz                          0%[                                                                        ]       0  --.-KB/s               
+archive.tar.gz                          2%[=>                                                                      ] 200,20K  1001KB/s               
+archive.tar.gz                         19%[=============>                                                          ]   1,35M  3,22MB/s               
+archive.tar.gz                         59%[=========================================>                              ]   4,09M  6,59MB/s               
+archive.tar.gz                         90%[================================================================>       ]   6,31M  7,68MB/s               
+archive.tar.gz                        100%[=======================================================================>]   6,94M  7,90MB/s    in 0,9s    
+2025-02-09 08:52:15 (7,90 MB/s) - ‘archive.tar.gz’ saved [7275140/7275140]
+
+root@ubuntu24-pro:/home/alex# tar -xzvf ./archive.tar.gz 
+zpoolexport/
+zpoolexport/filea
+zpoolexport/fileb
+root@ubuntu24-pro:/home/alex# ll
+
+total 7208
+drwxr-x--- 5 alex alex    4096 фев  9 08:52 .
+drwxr-xr-x 3 root root    4096 янв 10 13:49 ..
+-rw-r--r-- 1 root root 7275140 дек  6  2023 archive.tar.gz 
+-rw------- 1 alex alex    1205 янв 18 05:51 .bash_history
+-rw-r--r-- 1 alex alex     220 мар 31  2024 .bash_logout
+-rw-r--r-- 1 alex alex    3771 мар 31  2024 .bashrc
+drwx------ 2 alex alex    4096 янв 10 13:50 .cache
+-rw-r--r-- 1 root root   57344 фев  9 08:51 less08_loggs
+-rw------- 1 alex alex      20 янв 10 14:06 .lesshst
+-rw-r--r-- 1 alex alex     807 мар 31  2024 .profile
+drwx------ 2 alex alex    4096 янв 10 13:49 .ssh
+-rw-r--r-- 1 alex alex       0 янв 10 14:14 .sudo_as_admin_successful
+drwxr-xr-x 2 root root    4096 мая 15  2020 zpoolexport/
+
+root@ubuntu24-pro:/home/alex# ll ./zpoolexport/
+total 1024016
+drwxr-xr-x 2 root root      4096 мая 15  2020 .
+drwxr-x--- 5 alex alex      4096 фев  9 08:52 ..
+-rw-r--r-- 1 root root 524288000 мая 15  2020 filea
+-rw-r--r-- 1 root root 524288000 мая 15  2020 fileb
+
+# проверить возможность импорта пула в данный каталог
+root@ubuntu24-pro:/home/alex# zpool import -d zpoolexport/
+
+   pool: otus
+     id: 6554193320433390805
+  state: ONLINE
+status: Some supported features are not enabled on the pool.
+	(Note that they may be intentionally disabled if the
+	'compatibility' property is set.)
+ action: The pool can be imported using its name or numeric identifier, though
+	some features will not be available without an explicit 'zpool upgrade'.
+ config:
+
+	otus                              ONLINE
+	  mirror-0                        ONLINE
+	    /home/alex/zpoolexport/filea  ONLINE
+	    /home/alex/zpoolexport/fileb  ONLINE
+
+root@ubuntu24-pro:/home/alex# zpool import -d zpoolexport/ otus otus_import_pool
+
+# вывод всех параметров пула
+root@ubuntu24-pro:/home/alex# zpool get all otus_import_pool
+NAME              PROPERTY                       VALUE                          SOURCE
+otus_import_pool  size                           480M                           -
+otus_import_pool  capacity                       0%                             -
+otus_import_pool  altroot                        -                              default
+otus_import_pool  health                         ONLINE                         -
+otus_import_pool  guid                           6554193320433390805            -
+otus_import_pool  version                        -                              default
+otus_import_pool  bootfs                         -                              default
+otus_import_pool  delegation                     on                             default
+otus_import_pool  autoreplace                    off                            default
+otus_import_pool  cachefile                      -                              default
+otus_import_pool  failmode                       wait                           default
+otus_import_pool  listsnapshots                  off                            default
+otus_import_pool  autoexpand                     off                            default
+otus_import_pool  dedupratio                     1.00x                          -
+otus_import_pool  free                           478M                           -
+otus_import_pool  allocated                      2.09M                          -
+otus_import_pool  readonly                       off                            -
+otus_import_pool  ashift                         0                              default
+otus_import_pool  comment                        -     							default
+otus_import_pool  expandsize                     -                              -
+otus_import_pool  freeing                        0                              -
+otus_import_pool  fragmentation                  0%                             -
+otus_import_pool  leaked                         0                              -
+otus_import_pool  multihost                      off                            default
+otus_import_pool  checkpoint                     -                              -
+otus_import_pool  load_guid                      2905547293815891499            -
+otus_import_pool  autotrim                       off                            default
+otus_import_pool  compatibility                  off                            default
+otus_import_pool  bcloneused                     0                              -
+otus_import_pool  bclonesaved                    0                              -
+otus_import_pool  bcloneratio                    1.00x                          -
+otus_import_pool  feature@async_destroy          enabled                        local
+otus_import_pool  feature@empty_bpobj            active                         local
+otus_import_pool  feature@lz4_compress           active                         local
+otus_import_pool  feature@multi_vdev_crash_dump  enabled                        local
+otus_import_pool  feature@spacemap_histogram     active                         local
+otus_import_pool  feature@enabled_txg            active                         local
+otus_import_pool  feature@hole_birth             active                         local
+otus_import_pool  feature@extensible_dataset     active                         local
+otus_import_pool  feature@embedded_data          active                         local
+otus_import_pool  feature@bookmarks              enabled                        local
+otus_import_pool  feature@filesystem_limits      enabled                        local
+otus_import_pool  feature@large_blocks           enabled                        local
+otus_import_pool  feature@large_dnode            enabled                        local
+otus_import_pool  feature@sha512                 enabled                        local
+otus_import_pool  feature@skein                  enabled                        local
+otus_import_pool  feature@edonr                  enabled                        local
+otus_import_pool  feature@userobj_accounting     active                         local
+otus_import_pool  feature@encryption             enabled                        local
+otus_import_pool  feature@project_quota          active                         local
+otus_import_pool  feature@device_removal         enabled                        local
+otus_import_pool  feature@obsolete_counts        enabled                        local
+otus_import_pool  feature@zpool_checkpoint       enabled                        local
+otus_import_pool  feature@spacemap_v2            active                         local
+otus_import_pool  feature@allocation_classes     enabled                        local
+otus_import_pool  feature@resilver_defer         enabled                        local
+otus_import_pool  feature@bookmark_v2            enabled                        local
+otus_import_pool  feature@redaction_bookmarks    disabled                       local
+otus_import_pool  feature@redacted_datasets      disabled                       local
+otus_import_pool  feature@bookmark_written       disabled                       local
+otus_import_pool  feature@log_spacemap           disabled                       local
+otus_import_pool  feature@livelist               disabled                       local
+otus_import_pool  feature@device_rebuild         disabled                       local
+otus_import_pool  feature@zstd_compress          disabled                       local
+otus_import_pool  feature@draid                  disabled                       local
+otus_import_pool  feature@zilsaxattr             disabled                       local
+otus_import_pool  feature@head_errlog            disabled                       local
+otus_import_pool  feature@blake3                 disabled                       local
+otus_import_pool  feature@block_cloning          disabled                       local
+otus_import_pool  feature@vdev_zaps_v2           disabled                       local
+
+root@ubuntu24-pro:/home/alex# zfs get all otus_import_pool
+
+NAME              PROPERTY              VALUE                      SOURCE
+otus_import_pool  type                  filesystem                 -
+otus_import_pool  creation              Пт мая 15  4:00 2020  -
+otus_import_pool  used                  2.04M                      -
+otus_import_pool  available             350M                       -
+otus_import_pool  referenced            24K                        -
+otus_import_pool  compressratio         1.00x                      -
+otus_import_pool  mounted               yes                        -
+otus_import_pool  quota                 none                       default
+otus_import_pool  reservation           none                       default
+otus_import_pool  recordsize            128K                       local
+otus_import_pool  mountpoint            /otus_import_pool          default
+otus_import_pool  sharenfs              off                        default
+otus_import_pool  checksum              sha256                     local
+otus_import_pool  compression           zle                        local
+otus_import_pool  atime                 on                         default
+otus_import_pool  devices               on                         default
+otus_import_pool  exec                  on                         default
+otus_import_pool  setuid                on                         default
+otus_import_pool  readonly              off                        default
+otus_import_pool  zoned                 off                        default
+otus_import_pool  snapdir               hidden                     default
+otus_import_pool  aclmode               discard                    default
+otus_import_pool  aclinherit            restricted                 default
+otus_import_pool  createtxg             1                          -
+otus_import_pool  canmount              on                         default
+otus_import_pool  xattr                 on                         default
+otus_import_pool  copies                1                          default
+otus_import_pool  version               5                          -
+otus_import_pool  utf8only              off                        -
+otus_import_pool  normalization         none                       -
+otus_import_pool  casesensitivity       sensitive                  -
+otus_import_pool  vscan                 off                        default
+otus_import_pool  nbmand                off                        default
+otus_import_pool  sharesmb              off                        default
+otus_import_pool  refquota              none                       default
+otus_import_pool  refreservation        none                       default
+otus_import_pool  guid                  14592242904030363272       -
+otus_import_pool  primarycache          all                        default
+otus_import_pool  secondarycache        all                        default
+otus_import_pool  usedbysnapshots       0B                         -
+otus_import_pool  usedbydataset         24K                        -
+otus_import_pool  usedbychildren        2.01M                      -
+otus_import_pool  usedbyrefreservation  0B                         -
+otus_import_pool  logbias               latency                    default
+otus_import_pool  objsetid              54                         -
+otus_import_pool  dedup                 off                        default
+otus_import_pool  mlslabel              none                       default
+otus_import_pool  sync                  standard                   default
+otus_import_pool  dnodesize             legacy                     default
+otus_import_pool  refcompressratio      1.00x                      -
+otus_import_pool  written               24K                        -
+otus_import_pool  logicalused           1020K                      -
+otus_import_pool  logicalreferenced     12K                        -
+otus_import_pool  volmode               default                    default
+otus_import_pool  filesystem_limit      none                       default
+otus_import_pool  snapshot_limit        none                       default
+otus_import_pool  filesystem_count      none                       default
+otus_import_pool  snapshot_count        none                       default
+otus_import_pool  snapdev               hidden                     default
+otus_import_pool  acltype               off                        default
+otus_import_pool  context               none                       default
+otus_import_pool  fscontext             none                       default
+otus_import_pool  defcontext            none                       default
+otus_import_pool  rootcontext           none                       default
+otus_import_pool  relatime              on                         default
+otus_import_pool  redundant_metadata    all                        default
+otus_import_pool  overlay               on                         default
+otus_import_pool  encryption            off                        default
+otus_import_pool  keylocation           none                       default
+otus_import_pool  keyformat             none                       default
+otus_import_pool  pbkdf2iters           0                          default
+otus_import_pool  special_small_blocks  0                          default
+
+# показать доступное место в пуле
+root@ubuntu24-pro:/home/alex# яfs get available otus_import_pool
+NAME              PROPERTY   VALUE  SOURCE
+otus_import_pool  available  350M   -
+
+# показать параметр чтение/запись
+root@ubuntu24-pro:/home/alex# zfs get readonly otus_import_pool
+NAME              PROPERTY    VALUE    SOURCE
+otus_import_pool  readonly  off     default
+
+# показать объем занятого пространства
+root@ubuntu24-pro:/home/alex# zfs get recordsize otus_import_pool
+NAME              PROPERTY     VALUE           SOURCE
+otus_import_pool  recordsize  128K     local
+
+# показать метод сжатия
+root@ubuntu24-pro:/home/alex# zfs get compression otus_import_pool
+NAME              PROPERTY  VALUE      SOURCE
+otus_import_pool  compression  zle             local
+
+# показать checksum
+root@ubuntu24-pro:/home/alex# zfs get checksum
+NAME              PROPERTY  VALUE      SOURCE
+otus_import_pool  checksum  sha256     local
+
+################## Работа со снапшотом ###########################
+
+root@ubuntu24-pro:/home/alex# wget -O otus_task2.file --no-check-certificate https://drive.usercontent.google.com/download?id=1wgxjih8YZ-cqLqaZVa0lA3h[27m[7m3[27m[7mY029c3oI&export=download
+Redirecting output to ‘wget-log’.
+
+[1]+  Done                    wget -O otus_task2.file --no-check-certificate https://drive.usercontent.google.com/download?id=1wgxjih8YZ-cqLqaZVa0lA3h3Y029c3oI
+root@ubuntu24-pro:/home/alex# ll
+
+total 12540
+drwxr-x--- 5 alex alex    4096 фев  9 09:02 .
+drwxr-xr-x 3 root root    4096 янв 10 13:49 ..
+-rw-r--r-- 1 root root 7275140 дек  6  2023 archive.tar.gz
+-rw------- 1 alex alex    1205 янв 18 05:51 .bash_history
+-rw-r--r-- 1 alex alex     220 мар 31  2024 .bash_logout
+-rw-r--r-- 1 alex alex    3771 мар 31  2024 .bashrc
+drwx------ 2 alex alex    4096 янв 10 13:50 .cache
+-rw-r--r-- 1 root root   77824 фев  9 09:01 less08_loggs
+-rw------- 1 alex alex      20 янв 10 14:06 .lesshst
+-rw-r--r-- 1 root root 5432736 дек  6  2023 otus_task2.file
+-rw-r--r-- 1 alex alex     807 мар 31  2024 .profile
+drwx------ 2 alex alex    4096 янв 10 13:49 .ssh
+-rw-r--r-- 1 alex alex       0 янв 10 14:14 .sudo_as_admin_successful
+-rw-r--r-- 1 root root    1294 фев  9 09:03 wget-log
+drwxr-xr-x 2 root root    4096 мая 15  2020 zpoolexport/
+
+# восстановить фвйловую систему из снапшота
+root@ubuntu24-pro:/home/alex# zfs receive otus/test@today < otus_task2.file
+
+root@ubuntu24-pro:/home/alex# find /otus/test -name "secret_message"
+/otus/test/task1/file_mess/secret_message
+root@ubuntu24-pro:/home/alex# cat /otus/test/task1/file_mess/secret_message
+https://otus.ru/lessons/linux-hl/
+
+root@ubuntu24-pro:/home/alex#
+
+exit
+
+Script done on 2025-02-09 09:10:08+00:00 [COMMAND_EXIT_CODE="0"]
