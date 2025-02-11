@@ -1,0 +1,61 @@
+
+########## настройка сервера NFS ###################
+apt install nfs-kernel-server
+# настройки сервера nfs
+cat /etc/nfs.conf
+
+mkdir -p /srv/share/upload
+chown -R nobody:nogroup /srv/share
+chmod 0777 /srv/share/upload
+
+root@ubuntu24-pro:~# cat << EOF > /etc/exports
+/srv/share 192.168.122.87/24(rw,sync,root_squash)
+EOF
+root@ubuntu24-pro:~# exportfs -r
+exportfs: /etc/exports [1]: Neither 'subtree_check' or 'no_subtree_check' specified for export "192.168.122.87/24:/srv/share".
+  Assuming default behaviour ('no_subtree_check').
+  NOTE: this default has changed since nfs-utils version 1.0.x
+root@ubuntu24-pro:~# exportfs -s
+/srv/share  192.168.122.87/24(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,root_squash,no_all_squash)
+
+########## настройка клиента NFS ###################
+
+apt install nfs-common
+# для монтирования при загрузке добавляем в /etc/fstab строку с параметром NFSv3
+echo "192.168.122.87:/srv/share/ /mnt nfs vers=3,noauto,x-systemd.automount 0 0" >> /etc/fstab
+systemctl daemon-reload
+systemctl restart remote-fs.target
+# в данном случае происходит автоматическая генерация systemd units в каталоге /run/systemd/generator/, 
+# которые производят монтирование при первом обращении к каталогу /mnt/
+
+# проверяем монтирование mount | grep mnt
+root@ubuntu-server1:~# mount | grep mnt
+systemd-1 on /mnt type autofs (rw,relatime,fd=69,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=13152)
+192.168.122.87:/srv/share/ on /mnt type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=192.168.122.87,mountvers=3,mountport=51498,mountproto=udp,local_lock=none,addr=192.168.122.87)
+
+# после перезагрузки проверяем сервера
+root@ubuntu24-pro:~# exportfs -s
+/srv/share  192.168.122.87/24(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,root_squash,no_all_squash)
+root@ubuntu24-pro:~# showmount -a 192.168.122.87
+All mount points on 192.168.122.87:
+192.168.122.53:/srv/share
+
+# после перезагрузки проверяем клиента
+smith@ubuntu-server1:/mnt/upload$ showmount -a 192.168.122.87
+All mount points on 192.168.122.87:
+192.168.122.53:/srv/share
+# проверяем наличие созданных ранее файлов 
+smith@ubuntu-server1:/mnt/upload$ ll /mnt/upload/
+total 8
+drwxrwxrwx 2 nobody nogroup 4096 Feb  9 16:19 ./
+drwxr-xr-x 3 nobody nogroup 4096 Feb  9 15:53 ../
+-rw-r--r-- 1 root   root       0 Feb  9 16:18 check_file
+-rw-r--r-- 1 nobody nogroup    0 Feb  9 16:19 client_file
+# создаем новый, проверяем наличие прав
+smith@ubuntu-server1:/mnt/upload$ ll /mnt/upload/
+total 8
+drwxrwxrwx 2 nobody nogroup 4096 Feb  9 16:26 ./
+drwxr-xr-x 3 nobody nogroup 4096 Feb  9 15:53 ../
+-rw-r--r-- 1 root   root       0 Feb  9 16:18 check_file
+-rw-r--r-- 1 nobody nogroup    0 Feb  9 16:19 client_file
+-rw-rw-r-- 1 smith  smith      0 Feb  9 16:26 final_check

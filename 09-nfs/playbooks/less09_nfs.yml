@@ -1,0 +1,93 @@
+---
+- name: Конфигурирование файлопомойки NFSv3 на сервере
+  hosts: nfs_server
+  gather_facts: true
+  become: true
+  vars:
+    dir_nfs_srv: /srv/share
+  tasks:
+    - name: Установить на сервере пакет nfs
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      become: true
+      with_items:
+        - nfs-kernel-server
+      notify:
+        start nfs
+
+    - name: Создание каталога "{{ dir_nfs_srv }}/upload"
+      ansible.builtin.file:
+        path: "{{ dir_nfs_srv }}/upload"
+        state: directory
+        recurse: true
+        mode: '0777'
+        owner: nobody
+        group: nogroup
+
+    - name: 'Создать структуру экспорта каталога в etc exports "{{ groups.nfs_server }}"'
+      ansible.builtin.lineinfile:
+        dest: "/etc/exports"
+        line: "{{ dir_nfs_srv }} {{ hostvars[item].ansible_default_ipv4.address }}/24(rw,sync,root_squash,subtree_check) "
+        state: present
+      become: true
+      become_user: root
+      with_items: "{{ groups.nfs_server }}"
+
+    - name: Выполнение экспорта "exportfs -r" на сервере "{{ groups.nfs_server }}"
+      become: true
+      become_user: root
+      ansible.builtin.shell:
+        cmd: exportfs -rav
+
+- name: Конфигурирование доступа клиента к файлопомойке на сервере
+  hosts: nfs_clients
+  vars:
+    dir_nfs_srv: /srv/share/
+    dir_nfs_client: /mnt
+  tasks:
+    - name: Установить на клиенте nfs-common
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - nfs-common
+      notify:
+        - start nfs
+
+    - name: Добавление монтирования шары при запуске {{ groups.nfs_server }}:{{ dir_nfs_srv }}  {{ dir_nfs_client }}
+      ansible.builtin.lineinfile:
+        dest: "/etc/fstab"
+        line: "{{ hostvars[item].ansible_default_ipv4.address }}:{{ dir_nfs_srv }} {{ dir_nfs_client }} nfs vers=3,noauto,x-systemd.automount 0 0"
+        state: present
+      become: true
+      notify:
+        - Daemon-reload
+        - Remote-fs
+      with_items: "{{ groups.nfs_server }}"
+
+    - name: Монтирование всех шары из fstab
+      become: true
+      become_user: root
+      shell:
+        cmd: "mount -a"
+
+  handlers:
+    - name: Daemon-reload
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+    - name: Remote-fs
+      ansible.builtin.systemd:
+        name: remote-fs.target
+        state: restarted
+    - name: Start nfs
+      service:
+        name: nfs
+        state: started
+        enabled: true
+    - name: Start rpc
+      ansible.builtin.service:
+        name: rpcbind
+        state: started
+        enabled: true
+...
