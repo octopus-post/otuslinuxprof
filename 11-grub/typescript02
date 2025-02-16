@@ -1,0 +1,19 @@
+Script started on 2025-02-16 09:41:03+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="150" LINES="50"]
+[?2004h]0;root@ubuntu24-pro: ~root@ubuntu24-pro:~# lsv[Kblk
+[?2004lNAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sr0                        11:0    1 1024M  0 rom  
+vda                       253:0    0   20G  0 disk 
+├─vda1                    253:1    0    1M  0 part 
+├─vda2                    253:2    0  1,8G  0 part /boot
+└─vda3                    253:3    0 18,2G  0 part 
+  └─ubuntu--vg-ubuntu--lv 252:0    0   10G  0 lvm  /
+[?2004h]0;root@ubuntu24-pro: ~root@ubuntu24-pro:~# vgs
+[?2004l  VG        #PV #LV #SN Attr   VSize  VFree
+  ubuntu-vg   1   1   0 wz--n- 18,22g 8,22g
+[?2004h]0;root@ubuntu24-pro: ~root@ubuntu24-pro:~# vgrename ubuntu-vg ubuntu-vgotus[C[C[C[C
+[?2004l  Volume group "ubuntu-vg" successfully renamed to "ubuntu-vgotus"
+[?2004h]0;root@ubuntu24-pro: ~root@ubuntu24-pro:~# vgrename ubuntu-vg ubuntu-vgotus[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cs[Klsblkreboot[1Plsblk[2Pvgsrename ubuntu-vg ubuntu-vgotus[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ksed -i ''s'/'u'b'u'n't'u'-'-'v'g'/'u'b'u'n't'u'-'-'v'g'o't'u's'/'g'[C /boot/grub/grub.cfg 
+[?2004l[?2004h]0;root@ubuntu24-pro: ~root@ubuntu24-pro:~# [?2004l
+exit
+
+Script done on 2025-02-16 09:43:25+00:00 [COMMAND_EXIT_CODE="0"]
