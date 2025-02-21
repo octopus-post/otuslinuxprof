@@ -1,0 +1,131 @@
+ # смотрим что есть команда reboot
+ ╭─alex@smith in ~ took 0s
+ ╰─λ type -a reboot 
+reboot является /usr/bin/reboot
+reboot является /bin/reboot
+
+ ╭─alex@smith in ~ took 0s
+ ╰─λ file /usr/bin/reboot 
+/usr/bin/reboot: symbolic link to systemctl
+
+ ╭─alex@smith in ~ took 2m25s
+ ╰─λ ll /bin/reboot 
+lrwxrwxrwx 1 root root 9 янв 13 16:12 /bin/reboot -> systemctl
+
+==============================
+ systemctl status
+ ╭─alex@smith in ~ took 42s
+ ╰─λ systemctl status
+● smith
+    State: running
+    Units: 404 loaded (incl. loaded aliases)
+     Jobs: 0 queued
+   Failed: 0 units
+    Since: Wed 2025-02-19 18:24:18 +07; 1h 22min ago
+  systemd: 257.2-2-arch
+   CGroup: /
+           ├─init.scope
+           │ └─1 /usr/lib/systemd/systemd --switched-root --system --deserialize=51
+           ├─machine.slice
+           │ └─machine-qemu\x2d1\x2dubuntu24.04\x2dpro.scope
+           │   └─libvirt
+           │     └─392723 /usr/bin/qemu-system-x86_64 -name guest=ubuntu24.04-pro,debug-threads=on -S -object "{\"qom-type\":\"secret\",\"id\":\"mast>
+           ├─system.slice
+           │ ├─ModemManager.service
+...
+===================================
+ Контрольные группы systemd-cgls
+ ╭─alex@smith in ~ took 39s
+ ╰─λ systemd-cgls
+
+CGroup /:
+-.slice
+├─user.slice
+│ └─user-1000.slice
+│   ├─user@1000.service …
+│   │ ├─session.slice
+│   │ │ ├─gvfs-goa-volume-monitor.service
+│   │ │ │ └─109077 /usr/lib/gvfs-goa-volume-monitor
+│   │ │ ├─xdg-permission-store.service
+│   │ │ │ └─108978 /usr/lib/xdg-permission-store
+│   │ │ ├─dbus-broker.service
+│   │ │ │ ├─108706 /usr/bin/dbus-broker-launch --scope user
+│   │ │ │ └─108712 dbus-broker --log 4 --controller 10 --machine-id 621ba7ad4c4c4e39bec36d036b7305f1 --max-bytes 100000000000000 --max-fds 2500000000>
+│   │ │ ├─xdg-document-portal.service
+│   │ │ │ ├─108961 /usr/lib/xdg-document-portal
+...
+├─system.slice
+│ ├─irqbalance.service
+│ │ └─580 /usr/bin/irqbalance
+│ ├─ananicy-cpp.service
+│ │ └─573 /usr/bin/ananicy-cpp start
+│ ├─preload.service
+...
+===================================
+systemd-analyze
+ ╭─alex@smith in ~ took 5s
+[🧱] × systemd-analyze
+Startup finished in 1.313s (kernel) + 2.262s (initrd) + 25.520s (userspace) = 29.096s 
+graphical.target reached after 25.520s in userspace.
+
+ ╭─alex@smith in ~ took 1s
+ ╰─λ systemd-analyze plot > systemd-analized.svg 
+
+===================================
+journalctl  -p err
+            -b (=dmesg)
+            -u <unit>
+КОнфигурация 
+/etc/systemd/journald.conf
+==================================
+
+systemctl cat <unit>                <
+systemctl edit --full <unit>        < редактирование юнита. После редактирования выполняется автоматически daemon-reload
+
+# секции конфига юнита
+[Unit] < описание зависимостей
+Descrition=
+After=
+Requires=                   < какой сервис запустить вместе с текущим, сервисы связаны но не зависимы
+                            < чтобы добавить зависимость, включить сервис в раздел After
+Wants=                            
+
+[Service]                   < какие процессы стартуют
+Type=exec                   < exec или simple, fork, short
+Environment=IP=127.0.0.1    < переменная окружения
+ExecStart=... ${IP}         < пример использования переменной
+
+[Install] < где создается симлинк
+WantedBy=multi-user.target
+
+
+systemctl list-units                        < юниты всех типов
+systemctl list-dependencies ssh.service     < зависимости
+systemctl --with-dependencies status <unit>
+systemctl show <unit>
+
+==============================
+пакет graphviz с приложением dot
+
+systemd-analyze dot --require ssh.service | dot -Tsvg > systemd-ssh.svg
+# порядок загрузки
+                    --order
+
+==============================
+
+ДЗ
+# файл с переменными окружения WORD и LOG
+/etc/default/watchlog
+# лог-файл с текстом, содержащим ALERT
+/var/log/watchlog.log
+# скрипт поиска слова в тексте
+/opt/watchlog.sh
+# юнит для сервиса
+/etc/systemd/system/watchlog.service
+# юнит для таймера
+/etc/systemd/system/watchlog.timer
+# запуск таймер
+systemctl start watchlog.timer
+
+# список запущенных юнитов timer
+systemctl list-timers

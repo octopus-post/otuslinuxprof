@@ -1,0 +1,35 @@
+root@ubuntu24-pro:~# tail -n 100 /var/log/syslog | grep word
+2025-02-19T15:37:15.256054+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:37:15 +07: I found word, Master!
+2025-02-19T15:38:15.245800+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:38:15 +07: I found word, Master!
+2025-02-19T15:38:55.251515+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:38:55 +07: I found word, Master!
+2025-02-19T15:39:55.252858+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:39:55 +07: I found word, Master!
+2025-02-19T15:40:36.811925+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:40:36 +07: I found word, Master!
+2025-02-19T15:44:07.814058+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:44:07 +07: I found word, Master!
+2025-02-19T15:44:15.248101+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:44:15 +07: I found word, Master!
+2025-02-19T15:44:55.248987+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:44:55 +07: I found word, Master!
+2025-02-19T15:45:15.350974+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:45:15 +07: I found word, Master!
+2025-02-19T15:45:34.667864+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:45:34 +07: I found word, Master!
+2025-02-19T15:45:39.758313+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:45:39 +07: I found word, Master!
+2025-02-19T15:45:45.768092+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:45:45 +07: I found word, Master!
+2025-02-19T15:45:57.481983+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:45:57 +07: I found word, Master!
+2025-02-19T15:46:05.245979+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:46:05 +07: I found word, Master!
+2025-02-19T15:46:15.247688+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:46:15 +07: I found word, Master!
+2025-02-19T15:47:09.724044+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:47:09 +07: I found word, Master!
+2025-02-19T15:47:55.247870+00:00 ubuntu24-pro root: Ср 19 фев 2025 22:47:55 +07: I found word, Master!
+root@ubuntu24-pro:~# systemctl list-timers
+NEXT                            LEFT LAST                              PASSED UNIT                           ACTIVATES                       
+Wed 2025-02-19 22:48:25 +07      19s Wed 2025-02-19 22:47:55 +07      10s ago watchlog.timer                 watchlog.service
+Wed 2025-02-19 22:50:00 +07 1min 54s Wed 2025-02-19 22:40:08 +07     7min ago sysstat-collect.timer          sysstat-collect.service
+Wed 2025-02-19 23:30:52 +07    42min Wed 2025-02-19 22:22:03 +07    26min ago fwupd-refresh.timer            fwupd-refresh.service
+Thu 2025-02-20 00:00:00 +07 1h 11min Wed 2025-02-19 19:14:23 +07 3h 33min ago dpkg-db-backup.timer           dpkg-db-backup.service
+Thu 2025-02-20 00:00:00 +07 1h 11min Wed 2025-02-19 19:14:23 +07 3h 33min ago logrotate.timer                logrotate.service
+Thu 2025-02-20 00:07:00 +07 1h 18min -                                      - sysstat-summary.timer          sysstat-summary.service
+Thu 2025-02-20 01:48:16 +07  3h 0min Wed 2025-02-19 22:00:53 +07    47min ago man-db.timer                   man-db.service
+Thu 2025-02-20 05:09:51 +07       6h Wed 2025-02-19 20:11:45 +07 2h 36min ago motd-news.timer                motd-news.service
+Thu 2025-02-20 06:58:15 +07       8h Wed 2025-02-19 19:56:55 +07 2h 51min ago apt-daily-upgrade.timer        apt-daily-upgrade.service
+Thu 2025-02-20 17:24:12 +07      18h Wed 2025-02-19 22:22:03 +07    26min ago apt-daily.timer                apt-daily.service
+Thu 2025-02-20 19:19:15 +07      20h Wed 2025-02-19 19:19:15 +07 3h 28min ago update-notifier-download.timer update-notifier-download.service
+Thu 2025-02-20 19:29:15 +07      20h Wed 2025-02-19 19:29:15 +07 3h 18min ago systemd-tmpfiles-clean.timer   systemd-tmpfiles-clean.service
+Sun 2025-02-23 03:10:10 +07   3 days Sun 2025-02-16 13:57:36 +07            - e2scrub_all.timer              e2scrub_all.service
+Mon 2025-02-24 00:08:18 +07   4 days Tue 2025-02-18 23:05:14 +07            - fstrim.timer                   fstrim.service
+Mon 2025-02-24 23:40:08 +07   5 days Fri 2025-01-10 20:49:32 +07            - update-notifier-motd.timer     update-notifier-motd.service

@@ -1,0 +1,13 @@
+Установить spawn-fcgi и создать unit-файл (spawn-fcgi.sevice) 
+с помощью переделки init-скрипта
+
+Создать конфиг сервиса
+/etc/spawn-fcgi/fcgi.conf
+
+Создать юнит-файл сервиса
+/etc/systemd/system/spawn-fcgi.service
+
+Для запуска нескольких экземпляров сервиса:
+- создать новый Unit для работы с шаблонами (/etc/systemd/system/nginx@.service)
+- создать файлы конфигов nginx (first, second, etc)
+- запустить и проверить работу сервисов nginx@

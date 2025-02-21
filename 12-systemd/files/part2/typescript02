@@ -1,0 +1,50 @@
+root@ubuntu24-pro:~# systemctl status spawn-fcgi
+
+● spawn-fcgi.service - Spawn-fcgi startup service by Otus
+     Loaded: loaded (/etc/systemd/system/spawn-fcgi.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2025-02-21 22:46:05 +07; 31min ago
+   Main PID: 1839 (php-cgi)
+      Tasks: 33 (limit: 9442)
+     Memory: 19.3M (peak: 19.7M)
+        CPU: 77ms
+     CGroup: /system.slice/spawn-fcgi.service
+             ├─1839 /usr/bin/php-cgi
+             ├─1840 /usr/bin/php-cgi
+             ├─1841 /usr/bin/php-cgi
+             ├─1842 /usr/bin/php-cgi
+             ├─1843 /usr/bin/php-cgi
+             ├─1844 /usr/bin/php-cgi
+             ├─1845 /usr/bin/php-cgi
+             ├─1846 /usr/bin/php-cgi
+             ├─1847 /usr/bin/php-cgi
+             ├─1848 /usr/bin/php-cgi
+             ├─1849 /usr/bin/php-cgi
+             ├─1850 /usr/bin/php-cgi
+             ├─1851 /usr/bin/php-cgi
+             ├─1852 /usr/bin/php-cgi
+             ├─1853 /usr/bin/php-cgi
+             ├─1854 /usr/bin/php-cgi
+             ├─1855 /usr/bin/php-cgi
+             ├─1856 /usr/bin/php-cgi
+             ├─1857 /usr/bin/php-cgi
+             ├─1858 /usr/bin/php-cgi
+             ├─1859 /usr/bin/php-cgi
+             ├─1860 /usr/bin/php-cgi
+             ├─1861 /usr/bin/php-cgi
+             ├─1862 /usr/bin/php-cgi
+             ├─1863 /usr/bin/php-cgi
+             ├─1864 /usr/bin/php-cgi
+             ├─1865 /usr/bin/php-cgi
+             ├─1866 /usr/bin/php-cgi
+             ├─1867 /usr/bin/php-cgi
+             ├─1868 /usr/bin/php-cgi
+             ├─1869 /usr/bin/php-cgi
+             ├─1870 /usr/bin/php-cgi
+             └─1871 /usr/bin/php-cgi
+
+фев 21 22:46:05 ubuntu24-pro systemd[1]: Started spawn-fcgi.service - Spawn-fcgi startup service by Otus.
+фев 21 22:50:28 ubuntu24-pro systemd[1]: /etc/systemd/system/spawn-fcgi.service:7: PIDFile= references a path below legacy directory /var/run/, updat>
+фев 21 22:50:29 ubuntu24-pro systemd[1]: /etc/systemd/system/spawn-fcgi.service:7: PIDFile= references a path below legacy directory /var/run/, updat>
+фев 21 22:51:55 ubuntu24-pro systemd[1]: /etc/systemd/system/spawn-fcgi.service:7: PIDFile= references a path below legacy directory /var/run/, updat>
+фев 21 22:51:56 ubuntu24-pro systemd[1]: /etc/systemd/system/spawn-fcgi.service:7: PIDFile= references a path below legacy directory /var/run/, updat>
+
