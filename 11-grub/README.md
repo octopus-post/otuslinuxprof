@@ -69,3 +69,4 @@ vda                           253:0    0   20G  0 disk
 - [https://manpages.ubuntu.com/manpages/focal/en/man8/update-initramfs.8.html](https://manpages.ubuntu.com/manpages/focal/en/man8/update-initramfs.8.html)
 - [https://mirrors.edge.kernel.org/pub/linux/utils/boot/dracut/dracut.html](https://mirrors.edge.kernel.org/pub/linux/utils/boot/dracut/dracut.html)
 - [https://manpages.ubuntu.com/manpages/bionic/en/man5/initramfs.conf.5.html](https://manpages.ubuntu.com/manpages/bionic/en/man5/initramfs.conf.5.html)
+- [Восстановление GRUB2](https://losst.pro/vosstanovlenie-grub2)
