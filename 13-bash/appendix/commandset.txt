@@ -1,0 +1,99 @@
+Позиционные параметры
+$1 - первый параметр
+$# - количество
+${10} - 10-й
+
+Методы запуска
+1.Передать путь к файлу выбранному интерпретатору
+    bash script.sh
+2.Сделать файл исполняемым и запустить по полному пути
+    chmod +x ./script.sh
+    ./script.sh
+3.Запустить файл в текущей оболочке командой source
+    . ./script.sh
+    source script.sh
+
+Математические операции
+let, expr — встроенные функции bash для арифметических операций
+Двойные скобки — позволяют проводить вычисления
+Операторы:
+    +,-, \*, / — сложение, вычитание, умножение, деление
+    var++, var-- инкремент, декремент (на 1)
+    % — остаток от деления
+
+Примеры:
+    let c=$a+$b
+    a=$(( 4 + 5 ))
+    a=$( expr 10 - 3 )
+
+Отладка скриптов
+
+    set -Eeuo pipefail — более строгое поведение, вывод ошибок сразу, учет ошибок в конвейерах
+    bash -x script.sh — построчное выполнение скрипта с показом  команд
+
+Условные переходы с else if
+    aaa="xxx"
+    if [[ "$aaa" == "bbb" ]]; then
+      echo "bbb"
+    elif [[ "$aaa" == "ccc" ]]; then
+      echo "ccc"
+    else
+      echo "something else"
+    fi
+
+Команда test и [ или [[
+    Если условие успешно, возвращает exit code 0, иначе 1
+    == — равенство.
+    != — неравенство.
+    -lt — меньше.
+    -gt — больше.
+    -lte — меньше или равно.
+    -gte — больше или равно.
+    -f  — файл.
+    -d — директория 
+    help test; help [; help [[
+    man test  # для внешней команды
+    Если нужно указать пустой блок then, то можно использовать : (пустышка)
+
+Функции
+    var1='A'
+    var2='B'
+    my_function () {
+        local var1='C'
+        var2='D'
+        echo "Inside function: var1: $var1, var2: $var2"
+    }
+    echo "Before executing function: var1: $var1, var2: $var2"
+    my_function
+    echo "After executing function: var1: $var1, var2: $var2"
+Функции — возврат значения
+    function fun1(){
+        echo 34
+    }
+    function fun2(){
+        local res=$(fun1)
+        echo $res
+    }
+
+Массивы
+    allThreads=(1 2 4 8 16 32 64 128)
+# Первый элемент
+    echo ${allThreads[0]}
+# Все элементы
+    echo ${allThreads[*]}
+    IFS=$'\n'; echo "${allThreads[*]}"
+# Добавить еще два значения
+    allThreads+=( 256 512 )
+Массивы — циклы
+# Цикл по элементам массива
+for t in ${allThreads[@]}
+do
+    echo "Value: $t"
+done
+
+# Цикл по индексам массива
+for t in ${!allThreads[@]}
+do
+    echo "Value: ${allThreads[$i]}"
+done
+
