@@ -61,4 +61,9 @@
 ========
   Онлайновый сервис проверки bash-скриптов
 - [ShellCheck](https://www.shellcheck.net/)
+
+======== Mail
+- [bsd-mailx / https://manpages.ubuntu.com/manpages/xenial/man1/bsd-mailx.1.html](https://manpages.ubuntu.com/manpages/xenial/man1/bsd-mailx.1.html)
+- [How to Use the Linux mail Command](https://phoenixnap.com/kb/linux-mail-command)
+
   
