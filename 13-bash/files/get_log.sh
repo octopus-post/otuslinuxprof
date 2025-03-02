@@ -44,7 +44,7 @@ awk '{print $9}' ${logfile} | sort -n | uniq -cd | sort -nr | head -n10 > ${path
 header="Логи вебсервера $HOSTNAME. $(date)"
 substr="Юстас - Алексу. Результат работы веб-сервера $HOSTNAME.\n Логи во вложении.\n Период с $(date -d'-1 hours' +%d/%b/%Y:%H:%M) по $(date +%d/%b/%Y:%H:%M)" 
 recip='root'
-mail -s ${header} -A path_tolog_lashour/get_log_GET -A path_tolog_lashour/get_log_URL -A path_tolog_lashour/get_log_ERR -A path_tolog_lashour/get_log_CODE ${recip} <<< ${substr}
+mail -s "${header}" -A ${path_tolog_lashour}/get_log_GET -A ${path_tolog_lashour}/get_log_URL -A ${path_tolog_lashour}/get_log_ERR -A ${path_tolog_lashour}/get_log_CODE ${recip} <<< ${substr}
 
 
 rm -f ${verifile}
