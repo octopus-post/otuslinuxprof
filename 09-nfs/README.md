@@ -33,4 +33,7 @@ _Что нужно сделать?_
 
 ### Links:
 
-[https://docs.ansible.com/ansible/latest/collections/community/general/parted_module.html](https://docs.ansible.com/ansible/latest/collections/community/general/parted_module.html)
+- [https://docs.ansible.com/ansible/latest/collections/community/general/parted_module.html](https://docs.ansible.com/ansible/latest/collections/community/general/parted_module.html)
+
+- [https://timeweb.cloud/tutorials/ubuntu/nastrojka-nfs-v-ubuntu](https://timeweb.cloud/tutorials/ubuntu/nastrojka-nfs-v-ubuntu)
+- [https://documentation.ubuntu.com/server/how-to/networking/install-nfs/index.html](https://documentation.ubuntu.com/server/how-to/networking/install-nfs/index.html)
