@@ -1,0 +1,56 @@
+root@ubuntu-server1:/opt/nginx_logs# mail
+"/var/mail/root": 2 messages 1 new 1 unread
+ U   1 root               Sun Mar  2 06:43  67/3680  test
+>N   2 root               Sun Mar  2 14:12  51/1981  Логи вебсервера ubuntu-server1. Sun Mar  2 02:12:04 PM +07 2025
+? 2
+Return-Path: <root@ubuntu-server1>
+X-Original-To: root
+Delivered-To: root@ubuntu-server1
+Received: by ubuntu-server1 (Postfix, from userid 0)
+	id BF4F9121156; Sun,  2 Mar 2025 07:12:04 +0000 (UTC)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="1804289383-1740899524=:24240"
+Subject: Логи вебсервера ubuntu-server1. Sun Mar  2 02:12:04 PM +07 2025
+To: root@ubuntu-server1
+User-Agent: mail (GNU Mailutils 3.17)
+Date: Sun,  2 Mar 2025 14:12:04 +0700
+Message-Id: <20250302071204.BF4F9121156@ubuntu-server1>
+From: root <root@ubuntu-server1>
+
+--1804289383-1740899524=:24240
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+Content-ID: <20250302141204.24240@ubuntu-server1>
+
+Юстас - Алексу. Результат работы веб-сервера ubuntu-server1.\nЛоги во вложении.\nПериод с 02/Mar/2025:13:12 по 02/Mar/2025:14:12
+
+--1804289383-1740899524=:24240
+Content-Type: application/octet-stream; name="get_log_GET"
+Content-Disposition: attachment; filename="get_log_GET"
+Content-Transfer-Encoding: base64
+Content-ID: <20250302141204.24240.1@ubuntu-server1>
+
+ICAgICAyNCAyMDAgIkdFVCAxOTIuMTY4LjEyMi4xCg==
+--1804289383-1740899524=:24240
+Content-Type: application/octet-stream; name="get_log_URL"
+Content-Disposition: attachment; filename="get_log_URL"
+Content-Transfer-Encoding: base64
+Content-ID: <20250302141204.24240.2@ubuntu-server1>
+
+ICAgICA0NyAvCg==
+--1804289383-1740899524=:24240
+Content-Type: application/octet-stream; name="get_log_ERR"
+Content-Disposition: attachment; filename="get_log_ERR"
+Content-Transfer-Encoding: base64
+Content-ID: <20250302141204.24240.3@ubuntu-server1>
+
+
+--1804289383-1740899524=:24240
+Content-Type: application/octet-stream; name="get_log_CODE"
+Content-Disposition: attachment; filename="get_log_CODE"
+Content-Transfer-Encoding: base64
+Content-ID: <20250302141204.24240.4@ubuntu-server1>
+
+ICAgICA0OCAyMDAK
+--1804289383-1740899524=:24240--

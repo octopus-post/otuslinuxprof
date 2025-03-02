@@ -39,7 +39,7 @@
    - [get_log_URL](./files/get_log_URL), 
    - [get_log_ERR](./files/get_log_ERR), 
    - [get_log_CODE](./files/get_log_CODE)
-5. Администратору отправляется письмо с вложениями.
+5. Администратору отправляется письмо с вложениями. Результат отправки - [mail.txt](./files/mail.txt).
 
 ### Links:
 
