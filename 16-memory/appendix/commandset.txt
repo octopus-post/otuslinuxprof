@@ -1,0 +1,14 @@
+
+
+free -m
+free -h
+
+swappiness
+cat /proc/sys/vm/swappiness
+0
+100
+200
+
+min_free_kbytes
+
+overcommit
