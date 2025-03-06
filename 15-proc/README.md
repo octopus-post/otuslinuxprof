@@ -32,3 +32,4 @@
 
 ### Links:
 - [proc(5) - Linux man page / https://linux.die.net/man/5/proc](https://linux.die.net/man/5/proc)
+- [proc.txt](./appendix/proc.txt)
