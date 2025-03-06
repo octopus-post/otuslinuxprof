@@ -34,4 +34,4 @@
 
 ### Links:
 - [https://www.kernel.org/doc/Documentation/vm/transhuge.txt](https://www.kernel.org/doc/Documentation/vm/transhuge.txt)
-- 
+- [Создание SWAP в ОС Linux и FreeBSD на виртуализации KVM](https://firstvds.ru/technology/sozdanie-swap-v-os-linux-ubuntu-debian-centos-almalinux-i-freebsd-na-virtualizacii-kvm)
