@@ -1,0 +1,76 @@
+# jail
+mkdir ./jail
+mkdir -p ./jail/{bin,lib64}
+
+#
+sudo cp /bin/bash ./jail/bin
+#
+ldd
+#скопировать зависимости
+
+pivot_root 
+# есть преимущества в безопасности перед chroot
+
+===============
+namespaces
+    абстракция над физическими ресурсами
+    для изоляции процессов
+
+clone()
+setns()
+unshare()
+
+типы namespaces
+
+mount - разделить точки монтирования
+0:39
+    unshare --mount bash 
+    mount --bind source/ target/ < связанная точка монтирования
+    # не изолирует 
+
+    unshare --mount chroot nstest/ sh
+    mount -t proc proc proc 
+    ls
+
+
+network
+    # 
+
+IPC
+PID - изоляция идентификаторов процессов 
+    # 
+    ps -eaf
+    unshare --pid --fork bash
+
+
+user 
+UTS - разделение времени (timesharing system)
+    #запуск bash в новом пространстве имен:
+    unshare --uts bash
+    hostname
+    hostname nstest
+    hostname
+
+cgroup
+time
+
+====================
+cgroup
+
+ ╭─alex@smith in ~ took 0s
+ ╰─λ ls /sys/fs/cgroup/
+ananicy_test_cgroup2	cgroup.subtree_control	cpu.stat.local	        io.prio.class       memory.stat		                sys-kernel-config.mount
+cgroup.controllers	    cgroup.threads		    dev-hugepages.mount     io.stat	            memory.zswap.writeback	        sys-kernel-debug.mount
+cgroup.max.depth	    cpu.pressure		    dev-mqueue.mount        irq.pressure        misc.capacity		            sys-kernel-tracing.mount
+cgroup.max.descendants	cpuset.cpus.effective	init.scope	            machine.slice       misc.current		            system.slice
+cgroup.pressure		    cpuset.cpus.isolated	io.cost.model	        memory.numa_stat    misc.peak		                user.slice
+cgroup.procs		    cpuset.mems.effective	io.cost.qos	            memory.pressure     proc-sys-fs-binfmt_misc.mount
+cgroup.stat		        cpu.stat		        io.pressure	            memory.reclaim      sys-fs-fuse-connections.mount
+
+
+[sudo] пароль для alex:         
+[root@smith ~]# cat /proc/$$/cgroup 
+0::/user.slice/user-1000.slice/session-2.scope
+
+man systemd.resource-control 
+                                          
