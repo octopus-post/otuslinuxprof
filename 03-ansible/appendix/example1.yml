@@ -1,15 +1,16 @@
 ---
 #  в одном playbook для разных групп хостов разные play
-- hosts: web
+- name: Play for Install latest apache
+  hosts: web
   tasks:
-  - name: install latest apache
+  - name: Install latest apache
     apt:
       name: httpd
       state: latest
-
-- hosts: all
+- name: Play for Update packages
+  hosts: all
   tasks:
-  - name: update packages
+  - name: Update packages
     apt:
       name: '*'
       state: latest

@@ -11,7 +11,7 @@
         src: index.html
         dest: /var/www/html/index.html
     - name: httpd is stated
-      service: 
+      service:
         name: httpd
         state: started
         enabled: true
