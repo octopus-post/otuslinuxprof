@@ -1,0 +1,265 @@
+### Rocky8
+# сборка пакета nginx с дополнительным модулем 
+[root@rocky8 ~]# cd /home/smith/
+
+# предварительная установка пакетов
+[root@rocky8 ~]# yum install -y wget rpmdevtools \
+ rpm-build \ 
+ createrepo \
+ yum-utils \
+ cmake \
+ gcc \
+ git \
+ nano
+
+ # загрузка пакета nginx
+ [root@rocky8 rpm]# mkdir rpm && cd rpm
+ [root@rocky8 rpm]# yumdownloader --source nginx
+
+[root@rocky8 rpm]# rpm -Uvh nginx*.src.rpm
+Обновление / установка...
+   1:nginx-1:1.14.1-9.module+el8.4.0+5предупреждение: user mockbuild does not exist - using root
+...
+
+# установка зависимостей nginx
+[root@rocky8 rpm]# yum-builddep nginx
+подключение репозитория appstream-source
+подключение репозитория baseos-source
+Последняя проверка окончания срока действия метаданных: 0:05:20 назад, Вс 09 мар 2025 13:50:33.
+...
+Выполнено!
+
+# скачать исходник ngx_brotli
+[root@rocky8 rpm]# cd /root
+[root@rocky8 ~]# git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
+Клонирование в «ngx_brotli»...
+
+[root@rocky8 ~]# cd ngx_brotli/deps/brotli
+[root@rocky8 brotli]# mkdir out && cd out
+
+# сборка модуля ngx_brotli
+[root@rocky8 out]# cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_C_FLAGS="-Ofast -m64 -march=native -mtune=native -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" -DCMAKE_CXX_FLAGS="-Ofast -m64 -march=native -mtune=native -flto -funroll-loops -ffunction-sections -fdata-sections -Wl,--gc-sections" -DCMAKE_INSTALL_PREFIX=./installed ..
+-- The C compiler identification is GNU 8.5.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Build type is 'Release'
+-- Performing Test BROTLI_EMSCRIPTEN
+-- Performing Test BROTLI_EMSCRIPTEN - Failed
+-- Compiler is not EMSCRIPTEN
+-- Looking for log2
+-- Looking for log2 - not found
+-- Looking for log2
+-- Looking for log2 - found
+-- Configuring done (1.3s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+    CMAKE_CXX_FLAGS
+-- Build files have been written to: /root/ngx_brotli/deps/brotli/out
+
+[root@rocky8 out]# cmake --build . --config Release -j 2 --target brotlienc
+[  3%] Building C object CMakeFiles/brotlicommon.dir/c/common/constants.c.o
+[  6%] Building C object CMakeFiles/brotlicommon.dir/c/common/context.c.o
+[ 10%] Building C object CMakeFiles/brotlicommon.dir/c/common/dictionary.c.o
+[ 13%] Building C object CMakeFiles/brotlicommon.dir/c/common/platform.c.o
+[ 17%] Building C object CMakeFiles/brotlicommon.dir/c/common/shared_dictionary.c.o
+[ 20%] Building C object CMakeFiles/brotlicommon.dir/c/common/transform.c.o
+[ 24%] Linking C static library libbrotlicommon.a
+/bin/ar: CMakeFiles/brotlicommon.dir/c/common/constants.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlicommon.dir/c/common/context.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlicommon.dir/c/common/dictionary.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlicommon.dir/c/common/platform.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlicommon.dir/c/common/shared_dictionary.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlicommon.dir/c/common/transform.c.o: для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlicommon.a(constants.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlicommon.a(context.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlicommon.a(dictionary.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlicommon.a(platform.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlicommon.a(shared_dictionary.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlicommon.a(transform.c.o): для обработки объекта lto требуется модуль
+[ 24%] Built target brotlicommon
+[ 27%] Building C object CMakeFiles/brotlienc.dir/c/enc/backward_references.c.o
+[ 31%] Building C object CMakeFiles/brotlienc.dir/c/enc/backward_references_hq.c.o
+[ 34%] Building C object CMakeFiles/brotlienc.dir/c/enc/bit_cost.c.o
+[ 37%] Building C object CMakeFiles/brotlienc.dir/c/enc/block_splitter.c.o
+[ 41%] Building C object CMakeFiles/brotlienc.dir/c/enc/brotli_bit_stream.c.o
+[ 44%] Building C object CMakeFiles/brotlienc.dir/c/enc/cluster.c.o
+[ 48%] Building C object CMakeFiles/brotlienc.dir/c/enc/command.c.o
+[ 51%] Building C object CMakeFiles/brotlienc.dir/c/enc/compound_dictionary.c.o
+[ 55%] Building C object CMakeFiles/brotlienc.dir/c/enc/compress_fragment.c.o
+[ 58%] Building C object CMakeFiles/brotlienc.dir/c/enc/compress_fragment_two_pass.c.o
+[ 62%] Building C object CMakeFiles/brotlienc.dir/c/enc/dictionary_hash.c.o
+[ 65%] Building C object CMakeFiles/brotlienc.dir/c/enc/encode.c.o
+[ 68%] Building C object CMakeFiles/brotlienc.dir/c/enc/encoder_dict.c.o
+[ 72%] Building C object CMakeFiles/brotlienc.dir/c/enc/entropy_encode.c.o
+[ 75%] Building C object CMakeFiles/brotlienc.dir/c/enc/fast_log.c.o
+[ 79%] Building C object CMakeFiles/brotlienc.dir/c/enc/histogram.c.o
+[ 82%] Building C object CMakeFiles/brotlienc.dir/c/enc/literal_cost.c.o
+[ 86%] Building C object CMakeFiles/brotlienc.dir/c/enc/memory.c.o
+[ 89%] Building C object CMakeFiles/brotlienc.dir/c/enc/metablock.c.o
+[ 93%] Building C object CMakeFiles/brotlienc.dir/c/enc/static_dict.c.o
+[ 96%] Building C object CMakeFiles/brotlienc.dir/c/enc/utf8_util.c.o
+[100%] Linking C static library libbrotlienc.a
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/backward_references.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/backward_references_hq.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/bit_cost.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/block_splitter.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/brotli_bit_stream.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/cluster.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/command.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/compound_dictionary.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/compress_fragment.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/compress_fragment_two_pass.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/dictionary_hash.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/encode.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/encoder_dict.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/entropy_encode.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/fast_log.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/histogram.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/literal_cost.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/memory.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/metablock.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/static_dict.c.o: для обработки объекта lto требуется модуль
+/bin/ar: CMakeFiles/brotlienc.dir/c/enc/utf8_util.c.o: для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(backward_references.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(backward_references_hq.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(bit_cost.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(block_splitter.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(brotli_bit_stream.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(cluster.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(command.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(compound_dictionary.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(compress_fragment.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(compress_fragment_two_pass.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(dictionary_hash.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(encode.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(encoder_dict.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(entropy_encode.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(fast_log.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(histogram.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(literal_cost.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(memory.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(metablock.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(static_dict.c.o): для обработки объекта lto требуется модуль
+/bin/ranlib: libbrotlienc.a(utf8_util.c.o): для обработки объекта lto требуется модуль
+[100%] Built target brotlienc
+
+================================
+
+[root@rocky8 out]# pwd
+/root/ngx_brotli/deps/brotli/out
+
+# вернёмся в каталог root
+[root@rocky8 out]# cd ../../../..
+
+# в /root/rpmbuild/SPECS/nginx.spec 
+# добавить указание на модуль ngx_brotli
+# секцию .configure? перед условиями if добавить строку 
+# --add-module=/root/ngx_brotli \
+
+=========================
+# сборка пакета 
+[root@rocky8 ~]# cd ~/rpmbuild/SPECS/
+[root@rocky8 SPECS]# pwd
+/root/rpmbuild/SPECS
+[root@rocky8 SPECS]# rpmbuild -ba nginx.spec -D 'debug_package %{nil}'
+
+
+
+===================================================
+# Репозиторий
+
+#*************** каталог для репозитория
+mkdir /usr/share/nginx/html/repo
+#*************** создание репозитория
+[root@rocky8 nginx]# createrepo /usr/share/nginx/html/repo/
+Directory walk started
+Directory walk done - 1 packages
+Temporary output repo path: /usr/share/nginx/html/repo/.repodata/
+Preparing sqlite DBs
+Pool started (with 5 workers)
+Pool finished
+
+#***************
+добавить параметр автоиндекса в nginx.conf
+	index index.html index.htm;
+	autoindex on;
+# проверить синтаксис
+nginx -t
+# перезапустить
+nginx -s reload
+
+#*************** проверяем доступность файлов в репозитории
+[root@rocky8 nginx]# curl -a http://192.168.122.61/repo/
+<html>
+<head><title>Index of /repo/</title></head>
+<body bgcolor="white">
+<h1>Index of /repo/</h1><hr><pre><a href="../">../</a>
+<a href="repodata/">repodata/</a>                                          09-Mar-2025 08:06                   -
+<a href="percona-release-latest.noarch.rpm">percona-release-latest.noarch.rpm</a>                  12-Feb-2025 14:02               28300
+</pre><hr></body>
+</html>
+
+# добавление репозитория 
+[root@rocky8 repo]# cat >> /etc/yum.repos.d/otus.repo << EOF
+> [otus]
+> name=otus-linux
+> baseurl=http://localhost/repo
+> gpgcheck=0
+> enabled=1
+> EOF
+
+# проверить наличие репозитория в списке
+[root@rocky8 nginx]# yum repolist enabled | grep otus
+otus                                    otus-linux
+
+# установка пакета percona из локального репозитория
+[root@rocky8 nginx]# yum install -y percona-release.noarch
+Последняя проверка окончания срока действия метаданных: 0:42:09 назад, Вс 09 мар 2025 15:08:39.
+Зависимости разрешены.
+======================================================================================================================================================
+ Пакет                                      Архитектура                       Версия                            Репозиторий                     Размер
+======================================================================================================================================================
+Установка:
+ percona-release                            noarch                            1.0-30                            otus                             28 k
+
+Результат транзакции
+======================================================================================================================================================
+Установка  1 Пакет
+
+Объем загрузки: 28 k
+Объем изменений: 49 k
+Загрузка пакетов:
+percona-release-latest.noarch.rpm                                                                                     114 kB/s |  28 kB     00:00    
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Общий размер                                                                                                          113 kB/s |  28 kB     00:00     
+Проверка транзакции
+Проверка транзакции успешно завершена.
+Идет проверка транзакции
+Тест транзакции проведен успешно
+Выполнение транзакции
+  Подготовка       :                                                                                                                              1/1 
+  Установка        : percona-release-1.0-30.noarch                                                                                                1/1 
+  Запуск скриптлета: percona-release-1.0-30.noarch                                                                                                1/1 
+* Enabling the Percona Release repository
+<*> All done!
+* Enabling the Percona Telemetry repository
+<*> All done!
+* Enabling the PMM2 Client repository
+<*> All done!
+The percona-release package now contains a percona-release script that can enable additional repositories for our newer products.
+Note: currently there are no repositories that contain Percona products or distributions enabled. We recommend you to enable Percona Distribution repositories instead of individual product repositories, because with the Distribution you will get not only the database itself but also a set of other componets that will help you work with your database.
+For example, to enable the Percona Distribution for MySQL 8.0 repository use:
+  percona-release setup pdps8.0
+Note: To avoid conflicts with older product versions, the percona-release setup command may disable our original repository for some products.
+For more information, please visit:
+  https://docs.percona.com/percona-software-repositories/percona-release.html
+
+  Проверка         : percona-release-1.0-30.noarch                                                                                                1/1 
+Установлен:
+  percona-release-1.0-30.noarch                                                                                                                       
+Выполнено!
+========================
