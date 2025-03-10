@@ -85,9 +85,51 @@ min_free_kbytes - сколько памяти должно оставаться 
 [root@smith ~]# cat /proc/sys/vm/min_free_kbytes
 67584
 
-less /proc/zoneinfo - информация о зонах памяти 
+**если свободной памяти оставалось много, но swap был задействован,
+    это признак того, что в какой-либо из зон памяти свободных страниц оставалось 
+    меньше, чем параметр low 
+
+less /proc/zoneinfo - информация о зонах памяти, которых может быть несколько
     * если в какой либо из зон свободных страниц осталось меньше, чем параметр low,
     то в swap будет отправлен анонимный кэш 
+...
+  pages free     2816
+        boost    0
+        min      8
+        low      11             < вот этот параметр 
+        high     14
+        promo    17
+        spanned  4095
+        present  3991
+        managed  3840
+        cma      0
+        protection: (0, 2732, 31573, 0, 0)
+...
+
+[root@smith ~]# grep zone /proc/zoneinfo 
+Node 0, zone      DMA
+      nr_zone_inactive_anon 0
+      nr_zone_active_anon 0
+      nr_zone_inactive_file 0
+      nr_zone_active_file 0
+      nr_zone_unevictable 0
+      nr_zone_write_pending 0
+Node 0, zone    DMA32
+      nr_zone_inactive_anon 0
+      nr_zone_active_anon 0
+      nr_zone_inactive_file 0
+      nr_zone_active_file 0
+      nr_zone_unevictable 0
+      nr_zone_write_pending 0
+Node 0, zone   Normal
+      nr_zone_inactive_anon 0
+      nr_zone_active_anon 1266922
+      nr_zone_inactive_file 1009778
+      nr_zone_active_file 658766
+      nr_zone_unevictable 232
+      nr_zone_write_pending 104
+Node 0, zone  Movable
+Node 0, zone   Device
 
 ============part2 36:30
 overcommitmemory
