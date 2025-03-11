@@ -134,3 +134,141 @@ Node 0, zone   Device
 ============part2 36:30
 overcommitmemory
 
+[root@smith ~]# ls -l /proc/sys/vm/overcommit_*
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/overcommit_kbytes
+-rw-r--r-- 1 root root 0 мар 11 19:40 /proc/sys/vm/overcommit_memory    < поведение системы когда процесс запрашивает памяти больше, чем есть 
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/overcommit_ratio
+
+[root@smith ~]# cat /proc/sys/vm/overcommit_memory
+0
+**man proc 
+=======
+на сколько объем виртуальной памяти больше реальной
+[root@smith ~]# cat /proc/meminfo
+MemTotal:       32346412 kB
+MemFree:        25478072 kB
+MemAvailable:   29333056 kB
+Buffers:           39764 kB
+Cached:          3809260 kB
+SwapCached:            0 kB
+Active:          3032160 kB
+Inactive:        2646636 kB
+Active(anon):    1898756 kB
+Inactive(anon):        0 kB
+Active(file):    1133404 kB
+Inactive(file):  2646636 kB
+Unevictable:         776 kB
+Mlocked:             776 kB
+SwapTotal:      41573572 kB
+SwapFree:       41573572 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:                 0 kB
+Writeback:             0 kB
+AnonPages:       1811676 kB
+Mapped:           778268 kB
+Shmem:             69308 kB
+KReclaimable:     537828 kB
+Slab:             676320 kB
+SReclaimable:     537828 kB
+SUnreclaim:       138492 kB
+KernelStack:       13952 kB
+PageTables:        30980 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    57746776 kB
+Committed_AS:   10760584 kB         < разница между вирт и реальной памятью
+VmallocTotal:   34359738367 kB
+VmallocUsed:      256744 kB
+VmallocChunk:          0 kB
+Percpu:             5376 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:    323584 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:    413696 kB
+FilePmdMapped:    221184 kB
+CmaTotal:              0 kB
+CmaFree:               0 kB
+Unaccepted:            0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:               0 kB
+DirectMap4k:      279108 kB
+DirectMap2M:     5484544 kB
+DirectMap1G:    27262976 kB
+========
+
+ OOM killer (out-of-memory killer)
+ за минимальное количество действий освободить максимальный объем памяти
+
+[root@smith ~]# ps -efl | grep cupsd
+4 S root        4246       1  0  96   - - 23530 do_epo 19:40 ?        00:00:00 /usr/bin/cupsd -l
+0 S root      592968  424483  0  68 -12 -  1621 pipe_r 20:58 pts/1    00:00:00 grep --color=auto cupsd
+[root@smith ~]# ls -l /proc/4246/oom_*
+-rw-r--r-- 1 root root 0 мар 11 20:59 /proc/4246/oom_adj
+-r--r--r-- 1 root root 0 мар 11 20:59 /proc/4246/oom_score
+-rw-r--r-- 1 root root 0 мар 11 20:59 /proc/4246/oom_score_adj
+[root@smith ~]# cat /proc/4246/oom_score
+666                                         < количество очков, набранное процессом 
+[root@smith ~]# cat /proc/4246/oom_score_adj 
+0                                               < корректировка от 1000 до -1000
+
+=============
+грязные страницы
+[root@smith ~]# grep Dirty /proc/meminfo 
+Dirty:               224 kB
+[root@smith ~]# sync
+
+[root@smith ~]# grep Dirty /proc/meminfo 
+Dirty:                 0 kB
+
+**** когда система сбрасывает грязные страницы в штатном фоновом режиме
+[root@smith ~]# ls -l /proc/sys/vm/dirty*
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/dirty_background_bytes
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/dirty_background_ratio
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/dirty_bytes
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/dirty_expire_centisecs
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/dirty_ratio
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/dirtytime_expire_seconds
+-rw-r--r-- 1 root root 0 мар 11 20:36 /proc/sys/vm/dirty_writeback_centisecs
+
+
+[root@smith ~]# cat /proc/sys/vm/dirty_background_ratio
+10                                                          < при 10% от общего объема памяти 
+
+/proc/sys/vm/dirty_ratio
+20                                                          < % при котором грязные страницы будут синхронизироваться на диск
+                                                            < при этом процесс встанет на паузу
+< варианты как этого избежать:
+ - увеличить разрыв между dirty_background_ratio и dirty_ratio
+ - откорректировать параметр dirty_writeback_centisecs
+ [root@smith ~]# cat /proc/sys/vm/dirty_writeback_centisecs
+500                                                         < как часто будет запускаться служба синхронизации 100 centisecs = 1 sec 
+
+[root@smith ~]# cat /proc/sys/vm/dirty_expire_centisecs
+3000                                                        < как долго могут жить грязные страницы со времени последней модификации (не дольше 30 сек)
+                                                                даже если объем не дойдет до dirty_background_ratio
+
+[root@smith ~]# cat /proc/sys/vm/dirtytime_expire_seconds
+43200                                                       < сравнивает время существования страницы с atime файла (12 часов)
+                                                            < то есть исключается ситуация, когда данные не будут записаны в файловую систему
+
+
+==============
+как не потерять записи в журнал транзакций
+принудительно заставить записывать данные на диск
+
+set global innodb_flush_log_at_trx_commit = 1;  (по умолчанию 2)
+set global sync_binlog = 1;                     (по умолчанию 0)
+
+при этом транзакция будет завершена только после ее реальной записи на диск,
+то есть данные будут записаны в базу и записаны в бинлог
+а значит будет тормозить бд, увеличивается нагрузка на диск 
+но увеличивает надежность данных
+! есть смысл применять при небольшой нагрузке на бд 
