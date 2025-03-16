@@ -62,7 +62,7 @@
     - конфигурировать политики SELinux
 
 ### Комментарии к выполнению задания:
-  > _Задание выполнено c использованием Vagrant, vagrant box Almalinux8_
+  > _Задание выполнено c использованием Vagrant, vagrant box Almalinux8, libvirt_
 
 #### Задание 1. Запуск nginx на нестандартном порту 3-мя разными способами
 - [Vagrantfile](./files/task01/Vagrantfile)
