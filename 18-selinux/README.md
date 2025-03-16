@@ -79,8 +79,8 @@
 ### Links:
 
   > [Для задания 1 исходный стенд Vagrant на github.com/Nickmob/](https://github.com/Nickmob/vagrant_selinux)
+  
   > [Для задания 2 исходный стенд Vagrant на github.com/Nickmob/](https://github.com/Nickmob/vagrant_selinux_dns_problems)
-
 
   > [Дополнительный стенд](https://github.com/mbfx/otus-linux-adm/tree/master/selinux_dns_problems)
 
