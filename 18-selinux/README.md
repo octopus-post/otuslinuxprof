@@ -24,21 +24,22 @@
 - работать с SELinux: диагностировать проблемы и модифицировать политики SELinux для корректной работы приложений, если это требуется;
 
 1. Запустить nginx на нестандартном порту 3-мя разными способами:
-
-  - переключатели setsebool;
-  - добавление нестандартного порта в имеющийся тип;
-  - формирование и установка модуля SELinux.
+     - стенд [https://github.com/Nickmob/vagrant_selinux](https://github.com/Nickmob/vagrant_selinux);
+     - переключатели setsebool;
+     - добавление нестандартного порта в имеющийся тип;
+     - формирование и установка модуля SELinux.
+    
     К сдаче:
     README с описанием каждого решения (скриншоты и демонстрация приветствуются).
 
 
 2. Обеспечить работоспособность приложения при включенном selinux.
 
-  - развернуть приложенный стенд https://github.com/mbfx/otus-linux-adm/tree/master/selinux_dns_problems;
-  - выяснить причину неработоспособности механизма обновления зоны (см. README);
-  - предложить решение (или решения) для данной проблемы;
-  - выбрать одно из решений для реализации, предварительно обосновав выбор;
-  - реализовать выбранное решение и продемонстрировать его работоспособность.
+     - развернуть приложенный стенд [https://github.com/Nickmob/vagrant_selinux_dns_problems](https://github.com/Nickmob/vagrant_selinux_dns_problems);
+     - выяснить причину неработоспособности механизма обновления зоны (см. README);
+     - предложить решение (или решения) для данной проблемы;
+     - выбрать одно из решений для реализации, предварительно обосновав выбор;
+     - реализовать выбранное решение и продемонстрировать его работоспособность.
 
     К сдаче:
     README с анализом причины неработоспособности, возможными способами решения и обоснованием выбора одного из них;
@@ -62,19 +63,20 @@
     - конфигурировать политики SELinux
 
 ### Комментарии к выполнению задания:
-  > _Задание выполнено c использованием Vagrant, vagrant box Almalinux8, libvirt_
+  > _Задание выполнено c использованием Vagrant, libvirt, vagrant box Almalinux8 версия 8.10.20250220* (версия 9 не совместима с процессором, используемым на хосте)_
+  
 
 #### Задание 1. Запуск nginx на нестандартном порту 3-мя разными способами
-- [Vagrantfile](./files/task01/Vagrantfile)
-- Результаты выполнения и описание действий в файле [typescript01](./files/task01/typescript01)
+- [Vagrantfile](./files/task01/Vagrantfile);
+- Результаты выполнения и описание действий в файле [typescript01](./files/task01/typescript01);
 
 #### Задание 2. Обеспечение работоспособности приложения при включенном SELinux
-- [Vagrantfile](./files/task02/Vagrantfile)
-- Результаты выполнения и описание действий в файле [typescript02](./files/task02/typescript02)
+- [Vagrantfile](./files/task02/Vagrantfile);
+- Результаты выполнения и описание действий в файле [typescript02](./files/task02/typescript02);
 
 > При разворачивании стенда необходимо:
->    - в vagrantfile изменить провайдера на libvirt
->    - для задания 2 при запуске ansible playbook плей установки пакетов завершается с ошибкой. Установить пакеты вручную и и запустить playbook командой ```vagrant provision``` _(расмотреть рабочие варианты)_
+>    - в vagrantfile изменить провайдера на libvirt;
+>    - для задания 2 при запуске ansible playbook плей установки пакетов завершается с ошибкой. Установить пакеты вручную и и запустить playbook командой ```vagrant provision``` _(рассмотреть рабочие варианты)_;
 
 ### Links:
 
@@ -91,7 +93,3 @@
 - [https://habr.com/ru/companies/otus/articles/484896/](https://habr.com/ru/companies/otus/articles/484896/)
 - [Как установить SELinux на Ubuntu 22.04](https://www.linode.com/docs/guides/how-to-install-selinux-on-ubuntu-22-04/)
 - [https://access.redhat.com/documentation/ru-ru/red_hat_enterprise_linux/8/html/using_selinux/writing-a-custom-selinux-policy_using-selinux#creating-and-enforcing-an-selinux-policy-for-a-custom-application_writing-a-custom-selinux-policy](https://access.redhat.com/documentation/ru-ru/red_hat_enterprise_linux/8/html/using_selinux/writing-a-custom-selinux-policy_using-selinux#creating-and-enforcing-an-selinux-policy-for-a-custom-application_writing-a-custom-selinux-policy)
-
-
-
-  

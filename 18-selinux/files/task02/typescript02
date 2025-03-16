@@ -30,6 +30,7 @@ type=AVC msg=audit(1742113823.743:3426): avc:  denied  { write } for  pid=35406 
 [root@ns01 ~]# 
 
 === ошибка в контексте tcontext=unconfined_u:object_r:named_conf_t:s0 tclass=dir permissive=0
+=== изменения запрещены 
 
 ================================================
 Вариант исправления прав на стороне сервера ns01
