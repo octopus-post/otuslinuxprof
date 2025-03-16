@@ -1,0 +1,280 @@
+=========================================
+Задание 2. Обеспечение работоспособности приложения при включенном SELinux
+
+=== попытка внести с узла client изменения в зоны на ns01 
+[vagrant@client ~]$ nsupdate -k /etc/named.zonetransfer.key
+> server 192.168.50.10
+> zone ddns.lab
+> update add www.ddns.lab. 60 A 192.168.50.15
+> send
+update failed: SERVFAIL
+> quit
+=== 
+=== ошибки по безопасности на узле client отсутствуют
+[vagrant@client ~]$ sudo -i
+[root@client ~]# ^C
+[root@client ~]# cat /var/log/audit/audit.log | audit2why
+[root@client ~]# 
+
+=== проверка безопасности на узле ns01. 
+[vagrant@ns01 ~]$ 
+[vagrant@ns01 ~]$ sudo -i
+[root@ns01 ~]# cat /var/log/audit/audit.log | audit2why
+type=AVC msg=audit(1742113823.743:3426): avc:  denied  { write } for  pid=35406 comm="isc-worker0001" name="dynamic" dev="vda4" ino=33576954 scontext=system_u:system_r:named_t:s0 tcontext=unconfined_u:object_r:named_conf_t:s0 tclass=dir permissive=0
+
+	Was caused by:
+		Missing type enforcement (TE) allow rule.
+
+		You can use audit2allow to generate a loadable module to allow this access.
+
+[root@ns01 ~]# 
+
+=== ошибка в контексте tcontext=unconfined_u:object_r:named_conf_t:s0 tclass=dir permissive=0
+
+================================================
+Вариант исправления прав на стороне сервера ns01
+через изменение контекста без добавления правил 
+безопасности. Приданном способе возможен быстрый 
+откат изменений контекста безопасности.
+================================================
+
+=== проверим зону localhost. Разница в типах named_zone_t и named_conf_t
+[root@ns01 ~]# ls -alZ /var/named/named.localhost
+-rw-r-----. 1 root named system_u:object_r:named_zone_t:s0 152 Feb 20 09:05 /var/named/named.localhost
+[root@ns01 ~]# 
+[root@ns01 ~]# 
+
+=== проверим каталог named. Здесь типа named_conf_t отличается от верного named_zone_t
+[root@ns01 ~]# ls -laZ /etc/named
+total 28
+drw-rwx---.  3 root named system_u:object_r:named_conf_t:s0      121 Mar 16 08:18 .
+drwxr-xr-x. 92 root root  system_u:object_r:etc_t:s0            8192 Mar 16 08:18 ..
+drw-rwx---.  2 root named unconfined_u:object_r:named_conf_t:s0   56 Mar 16 08:18 dynamic
+-rw-rw----.  1 root named system_u:object_r:named_conf_t:s0      784 Mar 16 08:18 named.50.168.192.rev
+-rw-rw----.  1 root named system_u:object_r:named_conf_t:s0      610 Mar 16 08:18 named.dns.lab
+-rw-rw----.  1 root named system_u:object_r:named_conf_t:s0      609 Mar 16 08:18 named.dns.lab.view1
+-rw-rw----.  1 root named system_u:object_r:named_conf_t:s0      657 Mar 16 08:18 named.newdns.lab
+[root@ns01 ~]# 
+[root@ns01 ~]# 
+
+=== Задача заключается в том, чтобы изменить контекст безопасности на named_zone_t
+=== semanage показывает какие политики SELinux распространяются на каталог 
+=== на интересует строка /etc/named(/.*)? 
+[root@ns01 ~]# sudo semanage fcontext -l | grep named
+/dev/gpmdata                                       named pipe         system_u:object_r:gpmctl_t:s0 
+/dev/initctl                                       named pipe         system_u:object_r:initctl_t:s0 
+/dev/xconsole                                      named pipe         system_u:object_r:xconsole_device_t:s0 
+/dev/xen/tapctrl.*                                 named pipe         system_u:object_r:xenctl_t:s0 
+/etc/named(/.*)?                                   all files          system_u:object_r:named_conf_t:s0 
+/etc/named\.caching-nameserver\.conf               regular file       system_u:object_r:named_conf_t:s0 
+/etc/named\.conf                                   regular file       system_u:object_r:named_conf_t:s0 
+/etc/named\.rfc1912.zones                          regular file       system_u:object_r:named_conf_t:s0 
+/etc/named\.root\.hints                            regular file       system_u:object_r:named_conf_t:s0 
+/etc/rc\.d/init\.d/named                           regular file       system_u:object_r:named_initrc_exec_t:s0 
+/etc/rc\.d/init\.d/named-sdb                       regular file       system_u:object_r:named_initrc_exec_t:s0 
+/etc/rc\.d/init\.d/unbound                         regular file       system_u:object_r:named_initrc_exec_t:s0 
+/etc/rndc.*                                        regular file       system_u:object_r:named_conf_t:s0 
+/etc/unbound(/.*)?                                 all files          system_u:object_r:named_conf_t:s0 
+/usr/lib/systemd/system/named-sdb.*                regular file       system_u:object_r:named_unit_file_t:s0 
+/usr/lib/systemd/system/named.*                    regular file       system_u:object_r:named_unit_file_t:s0 
+/usr/lib/systemd/system/unbound.*                  regular file       system_u:object_r:named_unit_file_t:s0 
+/usr/lib/systemd/systemd-hostnamed                 regular file       system_u:object_r:systemd_hostnamed_exec_t:s0 
+/usr/sbin/lwresd                                   regular file       system_u:object_r:named_exec_t:s0 
+/usr/sbin/named                                    regular file       system_u:object_r:named_exec_t:s0 
+/usr/sbin/named-checkconf                          regular file       system_u:object_r:named_checkconf_exec_t:s0 
+/usr/sbin/named-pkcs11                             regular file       system_u:object_r:named_exec_t:s0 
+/usr/sbin/named-sdb                                regular file       system_u:object_r:named_exec_t:s0 
+/usr/sbin/unbound                                  regular file       system_u:object_r:named_exec_t:s0 
+/usr/sbin/unbound-anchor                           regular file       system_u:object_r:named_exec_t:s0 
+/usr/sbin/unbound-checkconf                        regular file       system_u:object_r:named_exec_t:s0 
+/usr/sbin/unbound-control                          regular file       system_u:object_r:named_exec_t:s0 
+/usr/share/munin/plugins/named                     regular file       system_u:object_r:services_munin_plugin_exec_t:s0 
+/var/lib/softhsm(/.*)?                             all files          system_u:object_r:named_cache_t:s0 
+/var/lib/unbound(/.*)?                             all files          system_u:object_r:named_cache_t:s0 
+/var/log/named.*                                   regular file       system_u:object_r:named_log_t:s0 
+/var/named(/.*)?                                   all files          system_u:object_r:named_zone_t:s0 
+/var/named/chroot(/.*)?                            all files          system_u:object_r:named_conf_t:s0 
+/var/named/chroot/dev                              directory          system_u:object_r:device_t:s0 
+/var/named/chroot/dev/log                          socket             system_u:object_r:devlog_t:s0 
+/var/named/chroot/dev/null                         character device   system_u:object_r:null_device_t:s0 
+/var/named/chroot/dev/random                       character device   system_u:object_r:random_device_t:s0 
+/var/named/chroot/dev/urandom                      character device   system_u:object_r:urandom_device_t:s0 
+/var/named/chroot/dev/zero                         character device   system_u:object_r:zero_device_t:s0 
+/var/named/chroot/etc(/.*)?                        all files          system_u:object_r:etc_t:s0 
+/var/named/chroot/etc/localtime                    regular file       system_u:object_r:locale_t:s0 
+/var/named/chroot/etc/named\.caching-nameserver\.conf regula=========================================r file       system_u:object_r:named_conf_t:s0 
+/var/named/chroot/etc/named\.conf                  regular file       system_u:object_r:named_conf_t:s0 
+/var/named/chroot/etc/named\.rfc1912.zones         regular file       system_u:object_r:named_conf_t:s0 
+/var/named/chroot/etc/named\.root\.hints           regular file       system_u:object_r:named_conf_t:s0 
+/var/named/chroot/etc/pki(/.*)?                    all files          system_u:object_r:cert_t:s0 
+/var/named/chroot/etc/rndc\.key                    regular file       system_u:object_r:dnssec_t:s0 
+/var/named/chroot/lib(/.*)?                        all files          system_u:object_r:lib_t:s0 
+/var/named/chroot/proc(/.*)?                       all files          <<None>>
+/var/named/chroot/run/named.*                      all files          system_u:object_r:named_var_run_t:s0 
+/var/named/chroot/usr/lib(/.*)?                    all files          system_u:object_r:lib_t:s0 
+/var/named/chroot/var/log                          directory          system_u:object_r:var_log_t:s0 
+/var/named/chroot/var/log/named.*                  regular file       system_u:object_r:named_log_t:s0 
+/var/named/chroot/var/named(/.*)?                  all files          system_u:object_r:named_zone_t:s0 
+/var/named/chroot/var/named/data(/.*)?             all files          system_u:object_r:named_cache_t:s0 
+/var/named/chroot/var/named/dynamic(/.*)?          all files          system_u:object_r:named_cache_t:s0 
+/var/named/chroot/var/named/named\.ca              regular file       system_u:object_r:named_conf_t:s0 
+/var/named/chroot/var/named/slaves(/.*)?           all files          system_u:object_r:named_cache_t:s0 
+/var/named/chroot/var/run/dbus(/.*)?               all files          system_u:object_r:system_dbusd_var_run_t:s0 
+/var/named/chroot/var/run/named.*                  all files          system_u:object_r:named_var_run_t:s0 
+/var/named/chroot/var/tmp(/.*)?                    all files          system_u:object_r:named_cache_t:s0 
+/var/named/chroot_sdb/dev                          directory          system_u:object_r:device_t:s0 
+/var/named/chroot_sdb/dev/null                     character device   system_u:object_r:null_device_t:s0 
+/var/named/chroot_sdb/dev/random                   character device   system_u:object_r:random_device_t:s0 
+/var/named/chroot_sdb/dev/urandom                  character device   system_u:object_r:urandom_device_t:s0 
+/var/named/chroot_sdb/dev/zero                     character device   system_u:object_r:zero_device_t:s0 
+/var/named/data(/.*)?                              all files          system_u:object_r:named_cache_t:s0 
+/var/named/dynamic(/.*)?                           all files          system_u:object_r:named_cache_t:s0 
+/var/named/named\.ca                               regular file       system_u:object_r:named_conf_t:s0 
+/var/named/slaves(/.*)?                            all files          system_u:object_r:named_cache_t:s0 
+/var/run/bind(/.*)?                                all files          system_u:object_r:named_var_run_t:s0 
+/var/run/initctl                                   named pipe         system_u:object_r:initctl_t:s0 
+/var/run/named(/.*)?                               all files          system_u:object_r:named_var_run_t:s0 
+/var/run/ndc                                       socket             system_u:object_r:named_var_run_t:s0 
+/var/run/systemd/initctl/fifo                      named pipe         system_u:object_r:initctl_t:s0 
+/var/run/unbound(/.*)?                             all files          system_u:object_r:named_var_run_t:s0 
+/var/named/chroot/usr/lib64 = /usr/lib
+/var/named/chroot/lib64 = /usr/lib
+[root@ns01 ~]# 
+[root@ns01 ~]# 
+
+=== изменить контекст безопасности можно утилитой chcon 
+[root@ns01 ~]# chcon -R -t named_zone_t /etc/named
+[root@ns01 ~]# ls -laZ /etc/named
+total 28
+drw-rwx---.  3 root named system_u:object_r:named_zone_t:s0      121 Mar 16 08:18 .
+drwxr-xr-x. 92 root root  system_u:object_r:etc_t:s0            8192 Mar 16 08:18 ..
+drw-rwx---.  2 root named unconfined_u:object_r:named_zone_t:s0   56 Mar 16 08:18 dynamic
+-rw-rw----.  1 root named system_u:object_r:named_zone_t:s0      784 Mar 16 08:18 named.50.168.192.rev
+-rw-rw----.  1 root named system_u:object_r:named_zone_t:s0      610 Mar 16 08:18 named.dns.lab
+-rw-rw----.  1 root named system_u:object_r:named_zone_t:s0      609 Mar 16 08:18 named.dns.lab.view1
+-rw-rw----.  1 root named system_u:object_r:named_zone_t:s0      657 Mar 16 08:18 named.newdns.lab
+[root@ns01 ~]# 
+[root@ns01 ~]# 
+[root@ns01 ~]# 
+
+============================================
+=== на клиенте вновь пробуем внести изменения
+[root@client ~]# nsupdate -k /etc/named.zonetransfer.key
+> server 192.168.50.10
+> zone ddns.lab
+> update add www.ddns.lab. 60 A 192.168.50.15
+> send 
+> quit
+[root@client ~]# 
+[root@client ~]# 
+[root@client ~]# 
+
+=== результат проверки
+[root@client ~]# dig www.ddns.lab
+
+; <<>> DiG 9.11.36-RedHat-9.11.36-16.el8_10.4 <<>> www.ddns.lab
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 31607
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 2
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+; COOKIE: f9db589c2762ad2ac4bd974b67d692a212a1336a73acf1b5 (good)
+;; QUESTION SECTION:
+;www.ddns.lab.			IN	A
+
+;; ANSWER SECTION:
+www.ddns.lab.		60	IN	A	192.168.50.15
+
+;; AUTHORITY SECTION:
+ddns.lab.		3600	IN	NS	ns01.dns.lab.
+
+;; ADDITIONAL SECTION:
+ns01.dns.lab.		3600	IN	A	192.168.50.10
+
+;; Query time: 1 msec
+;; SERVER: 192.168.50.10#53(192.168.50.10)
+;; WHEN: Sun Mar 16 08:58:10 UTC 2025
+;; MSG SIZE  rcvd: 124
+
+[root@client ~]# 
+
+==== перезагружаем хосты и повторно проверяем
+[root@client ~]# shutdown -r now
+Connection to 192.168.121.8 closed by remote host.
+[root@ns01 ~]# shutdown -r now
+Connection to 192.168.121.182 closed by remote host.
+
+[⚡] × vagrant ssh client
+[fog][WARNING] Unrecognized arguments: libvirt_ip_command
+###############################
+### Welcome to the DNS lab! ###
+###############################
+
+- Use this client to test the enviroment
+- with dig or nslookup. Ex:
+    dig @192.168.50.10 ns01.dns.lab
+
+- nsupdate is available in the ddns.lab zone. Ex:
+    nsupdate -k /etc/named.zonetransfer.key
+    server 192.168.50.10
+    zone ddns.lab 
+    update add www.ddns.lab. 60 A 192.168.50.15
+    send
+
+- rndc is also available to manage the servers
+    rndc -c ~/rndc.conf reload
+
+###############################
+### Enjoy! ####################
+###############################
+Last login: Sun Mar 16 08:25:10 2025 from 192.168.121.1
+
+[vagrant@client ~]$ dig @192.168.50.10 www.ddns.lab
+
+; <<>> DiG 9.11.36-RedHat-9.11.36-16.el8_10.4 <<>> @192.168.50.10 www.ddns.lab
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 11349
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 2
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+; COOKIE: c2964177b056fa3a3560586167d6937e9a50cd5bb04913d8 (good)
+;; QUESTION SECTION:
+;www.ddns.lab.			IN	A
+
+;; ANSWER SECTION:
+www.ddns.lab.		60	IN	A	192.168.50.15
+
+;; AUTHORITY SECTION:
+ddns.lab.		3600	IN	NS	ns01.dns.lab.
+
+;; ADDITIONAL SECTION:
+ns01.dns.lab.		3600	IN	A	192.168.50.10
+
+;; Query time: 1 msec
+;; SERVER: 192.168.50.10#53(192.168.50.10)
+;; WHEN: Sun Mar 16 09:01:50 UTC 2025
+;; MSG SIZE  rcvd: 124
+=========================================
+
+=========================================
+=== Возврат правил с помощью утилиты restorecon на сервере ns01
+=========================================
+[vagrant@ns01 ~]$ sudo -i 
+[root@ns01 ~]# restorecon -v -R /etc/named
+Relabeled /etc/named from system_u:object_r:named_zone_t:s0 to system_u:object_r:named_conf_t:s0
+Relabeled /etc/named/named.dns.lab from system_u:object_r:named_zone_t:s0 to system_u:object_r:named_conf_t:s0
+Relabeled /etc/named/named.dns.lab.view1 from system_u:object_r:named_zone_t:s0 to system_u:object_r:named_conf_t:s0
+Relabeled /etc/named/dynamic from unconfined_u:object_r:named_zone_t:s0 to unconfined_u:object_r:named_conf_t:s0
+Relabeled /etc/named/dynamic/named.ddns.lab from system_u:object_r:named_zone_t:s0 to system_u:object_r:named_conf_t:s0
+Relabeled /etc/named/dynamic/named.ddns.lab.view1 from system_u:object_r:named_zone_t:s0 to system_u:object_r:named_conf_t:s0
+Relabeled /etc/named/dynamic/named.ddns.lab.view1.jnl from system_u:object_r:named_zone_t:s0 to system_u:object_r:named_conf_t:s0
+Relabeled /etc/named/named.newdns.lab from system_u:object_r:named_zone_t:s0 to system_u:object_r:named_conf_t:s0
+Relabeled /etc/named/named.50.168.192.rev from system_u:object_r:named_zone_t:s0 to system_u:object_r:named_conf_t:s0
+
+=========================================
+*дополнить варианты

@@ -1,0 +1,28 @@
+0:24 
+0:44 работа SELinux
+
+cat /etc/selinux/config
+
+
+sestatus
+setenforce 0|1
+
+semanage permissive -a httpd_t
+
+chcon
+
+restorecon
+semanage
+
+semodule -l
+
+seinfo --portcon=80
+
+semanage port -a -T httpd_t -p tcp 5080         < добавление порта в тип httpd_t 
+semanage port -d -t http_port_t -p tcp 4881     < удаление порта
+
+параметризованные политики
+
+
+
+

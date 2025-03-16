@@ -1,0 +1,239 @@
+Задание 1. Запуск nginx на нестандартном порту 3-мя разными способами
+
+===Состояние демона nginx
+[root@selinux ~]# systemctl status nginx
+● nginx.service - The nginx HTTP and reverse proxy server
+   Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; vendor preset: disabled)
+   Active: failed (Result: exit-code) since Sat 2025-03-15 14:01:19 UTC; 36s ago
+  Process: 6414 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=1/FAILURE)
+  Process: 6412 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+
+Mar 15 14:01:19 selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
+Mar 15 14:01:19 selinux nginx[6414]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+Mar 15 14:01:19 selinux nginx[6414]: nginx: [emerg] bind() to [::]:4881 failed (13: Permission denied)
+Mar 15 14:01:19 selinux nginx[6414]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Mar 15 14:01:19 selinux systemd[1]: nginx.service: Control process exited, code=exited status=1
+Mar 15 14:01:19 selinux systemd[1]: nginx.service: Failed with result 'exit-code'.
+Mar 15 14:01:19 selinux systemd[1]: Failed to start The nginx HTTP and reverse proxy server.
+
+systemctl status firewalld
+
+===проверка конфигурации nginx
+Несмотря на присутствие в логе ошибки в конфигурации, тест конфигурация nginx проходит успешно, фаерволл отключен
+[root@selinux ~]# nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[root@selinux ~]# systemctl status firewalld
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; disabled; vendor preset: enabled)
+   Active: inactive (dead)
+     Docs: man:firewalld(1)
+===проверка статуса SELinux 
+[root@selinux ~]# getenforce
+Enforcing
+====================================
+Решение проблемы запуска nginx
+Вариант 1. Разрешение nginx использовать порт 4881 с помощью SETSEBOOL
+
+===С помощью утилиты audit2why из лога audit.log получим информацию о причине 
+[root@selinux ~]# grep httpd /var/log/audit/audit.log | audit2why
+type=AVC msg=audit(1742047279.438:695): avc:  denied  { name_bind } for  pid=6414 comm="nginx" src=4881 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0
+
+	Was caused by:
+	The boolean nis_enabled was set incorrectly. 
+	Description:
+	Allow nis to enabled
+
+	Allow access by executing:
+	# setsebool -P nis_enabled 1
+type=AVC msg=audit(1742048037.584:739): avc:  denied  { name_bind } for  pid=6864 comm="nginx" src=4881 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0
+
+	Was caused by:
+	The boolean nis_enabled was set incorrectly. 
+	Description:
+	Allow nis to enabled
+
+	Allow access by executing:
+	# setsebool -P nis_enabled 1
+
+===изменение параметра setsebool и запуск nginx
+[root@selinux ~]# setsebool -P nis_enabled on           <очень долго выполнялся
+
+[root@selinux ~]# getsebool -a | grep nis_enabled
+nis_enabled --> on
+
+[root@selinux ~]# systemctl start nginx
+[root@selinux ~]# systemctl status nginx
+● nginx.service - The nginx HTTP and reverse proxy server
+   Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; vendor preset: disabled)
+   Active: active (running) since Sat 2025-03-15 14:22:32 UTC; 5s ago
+  Process: 6905 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
+  Process: 6903 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
+  Process: 6901 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+ Main PID: 6907 (nginx)
+    Tasks: 3 (limit: 12375)
+   Memory: 4.9M
+   CGroup: /system.slice/nginx.service
+           ├─6907 nginx: master process /usr/sbin/nginx
+           ├─6908 nginx: worker process
+           └─6909 nginx: worker process
+
+Mar 15 14:22:32 selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
+Mar 15 14:22:32 selinux nginx[6903]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+Mar 15 14:22:32 selinux nginx[6903]: nginx: configuration file /etc/nginx/nginx.conf test is successful
+Mar 15 14:22:32 selinux systemd[1]: Started The nginx HTTP and reverse proxy server.
+
+[root@selinux ~]# curl localhost:4881
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+    <head>
+        <title>Test Page for the Nginx HTTP Server on AlmaLinux</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style type="text/css">
+            /*<![CDATA[*/
+...
+                    width="124" height="32" /></a>
+            </div>
+        </div>
+    </body>
+</html>
+
+
+===NGINX успешно запущен
+
+=========================
+Вариант 2. С помощью добавления порта в имеющийся тип selinux (SEMANAGE)
+
+===проверка используемых портов у типа http_port_t
+[root@selinux ~]# semanage port -l | grep http
+http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010
+http_cache_port_t              udp      3130
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+pegasus_https_port_t           tcp      5989
+
+===Добавим в этот тип http_port_t порт 4881, проверяем и запускаем NGINX
+[root@selinux ~]# semanage port -a -t http_port_t -p tcp 4881
+[root@selinux ~]# semanage port -l | grep http
+http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010
+http_cache_port_t              udp      3130
+http_port_t                    tcp      4881, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+pegasus_https_port_t           tcp      5989
+[root@selinux ~]# systemctl restart nginx
+[root@selinux ~]# systemctl status nginx
+● nginx.service - The nginx HTTP and reverse proxy server
+   Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; vendor preset: disabled)
+   Active: active (running) since Sat 2025-03-15 14:34:29 UTC; 6s ago
+  Process: 6975 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
+  Process: 6973 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
+  Process: 6971 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+ Main PID: 6977 (nginx)
+    Tasks: 3 (limit: 12375)
+   Memory: 5.0M
+   CGroup: /system.slice/nginx.service
+           ├─6977 nginx: master process /usr/sbin/nginx
+           ├─6978 nginx: worker process
+           └─6979 nginx: worker process
+
+Mar 15 14:34:29 selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
+Mar 15 14:34:29 selinux nginx[6973]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+Mar 15 14:34:29 selinux nginx[6973]: nginx: configuration file /etc/nginx/nginx.conf test is successful
+Mar 15 14:34:29 selinux systemd[1]: Started The nginx HTTP and reverse proxy server.
+[root@selinux ~]# curl localhost:4881
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+    <head>
+        <title>Test Page for the Nginx HTTP Server on AlmaLinux</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style type="text/css">
+...
+
+====удалим порт
+[root@selinux ~]# semanage port -d -t http_port_t -p tcp 4881
+[root@selinux ~]# systemctl restart nginx
+Job for nginx.service failed because the control process exited with error code.
+See "systemctl status nginx.service" and "journalctl -xe" for details.
+
+==================================
+Вариант 3. С помощью формирования и установки модуля SELinux
+===получим информацию из  о блокировке nginx 
+[root@selinux ~]# grep nginx /var/log/audit/audit.log
+type=ADD_GROUP msg=audit(1742047255.673:592): pid=3413 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:groupadd_t:s0-s0:c0.c1023 msg='op=add-group id=990 exe="/usr/sbin/groupadd" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant" ID="nginx"
+type=GRP_MGMT msg=audit(1742047255.687:593): pid=3413 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:groupadd_t:s0-s0:c0.c1023 msg='op=add-shadow-group id=990 exe="/usr/sbin/groupadd" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant" ID="nginx"
+type=ADD_USER msg=audit(1742047255.783:594): pid=3420 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:useradd_t:s0-s0:c0.c1023 msg='op=add-user acct="nginx" exe="/usr/sbin/useradd" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=SOFTWARE_UPDATE msg=audit(1742047258.491:642): pid=3325 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=install sw="nginx-filesystem-1:1.14.1-9.module_el8.3.0+2165+af250afe.alma.noarch" sw_type=rpm key_enforce=0 gpg_res=1 root_dir="/" comm="yum" exe="/usr/libexec/platform-python3.6" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=SOFTWARE_UPDATE msg=audit(1742047258.491:653): pid=3325 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=install sw="nginx-mod-http-perl-1:1.14.1-9.module_el8.3.0+2165+af250afe.alma.x86_64" sw_type=rpm key_enforce=0 gpg_res=1 root_dir="/" comm="yum" exe="/usr/libexec/platform-python3.6" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=SOFTWARE_UPDATE msg=audit(1742047258.491:654): pid=3325 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=install sw="nginx-mod-http-xslt-filter-1:1.14.1-9.module_el8.3.0+2165+af250afe.alma.x86_64" sw_type=rpm key_enforce=0 gpg_res=1 root_dir="/" comm="yum" exe="/usr/libexec/platform-python3.6" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=SOFTWARE_UPDATE msg=audit(1742047258.491:655): pid=3325 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=install sw="nginx-mod-mail-1:1.14.1-9.module_el8.3.0+2165+af250afe.alma.x86_64" sw_type=rpm key_enforce=0 gpg_res=1 root_dir="/" comm="yum" exe="/usr/libexec/platform-python3.6" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=SOFTWARE_UPDATE msg=audit(1742047258.491:656): pid=3325 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=install sw="nginx-mod-stream-1:1.14.1-9.module_el8.3.0+2165+af250afe.alma.x86_64" sw_type=rpm key_enforce=0 gpg_res=1 root_dir="/" comm="yum" exe="/usr/libexec/platform-python3.6" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=SOFTWARE_UPDATE msg=audit(1742047258.491:657): pid=3325 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=install sw="nginx-1:1.14.1-9.module_el8.3.0+2165+af250afe.alma.x86_64" sw_type=rpm key_enforce=0 gpg_res=1 root_dir="/" comm="yum" exe="/usr/libexec/platform-python3.6" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=SOFTWARE_UPDATE msg=audit(1742047258.491:658): pid=3325 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=install sw="nginx-mod-http-image-filter-1:1.14.1-9.module_el8.3.0+2165+af250afe.alma.x86_64" sw_type=rpm key_enforce=0 gpg_res=1 root_dir="/" comm="yum" exe="/usr/libexec/platform-python3.6" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=SOFTWARE_UPDATE msg=audit(1742047258.491:659): pid=3325 uid=0 auid=1000 ses=3 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=install sw="nginx-all-modules-1:1.14.1-9.module_el8.3.0+2165+af250afe.alma.noarch" sw_type=rpm key_enforce=0 gpg_res=1 root_dir="/" comm="yum" exe="/usr/libexec/platform-python3.6" hostname=? addr=? terminal=? res=success'UID="root" AUID="vagrant"
+type=AVC msg=audit(1742047279.438:695): avc:  denied  { name_bind } for  pid=6414 comm="nginx" src=4881 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0
+type=SYSCALL msg=audit(1742047279.438:695): arch=c000003e syscall=49 success=no exit=-13 a0=7 a1=55b7ede645d8 a2=1c a3=7fff75cdd534 items=0 ppid=1 pid=6414 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="nginx" exe="/usr/sbin/nginx" subj=system_u:system_r:httpd_t:s0 key=(null)ARCH=x86_64 SYSCALL=bind AUID="unset" UID="root" GID="root" EUID="root" SUID="root" FSUID="root" EGID="root" SGID="root" FSGID="root"
+type=SERVICE_START msg=audit(1742047279.444:696): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=nginx comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=failed'UID="root" AUID="unset"
+type=AVC msg=audit(1742048037.584:739): avc:  denied  { name_bind } for  pid=6864 comm="nginx" src=4881 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0
+type=SYSCALL msg=audit(1742048037.584:739): arch=c000003e syscall=49 success=no exit=-13 a0=7 a1=5603c1ca85d8 a2=1c a3=7ffc01d0c254 items=0 ppid=1 pid=6864 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="nginx" exe="/usr/sbin/nginx" subj=system_u:system_r:httpd_t:s0 key=(null)ARCH=x86_64 SYSCALL=bind AUID="unset" UID="root" GID="root" EUID="root" SUID="root" FSUID="root" EGID="root" SGID="root" FSGID="root"
+type=SERVICE_START msg=audit(1742048037.598:740): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=nginx comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=failed'UID="root" AUID="unset"
+type=SERVICE_START msg=audit(1742048552.820:749): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=nginx comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'UID="root" AUID="unset"
+type=SERVICE_STOP msg=audit(1742048913.128:755): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=nginx comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'UID="root" AUID="unset"
+type=AVC msg=audit(1742048913.181:756): avc:  denied  { name_bind } for  pid=6937 comm="nginx" src=4881 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0
+type=SYSCALL msg=audit(1742048913.181:756): arch=c000003e syscall=49 success=no exit=-13 a0=7 a1=55670608e5d8 a2=1c a3=7ffcdfd1cc74 items=0 ppid=1 pid=6937 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="nginx" exe="/usr/sbin/nginx" subj=system_u:system_r:httpd_t:s0 key=(null)ARCH=x86_64 SYSCALL=bind AUID="unset" UID="root" GID="root" EUID="root" SUID="root" FSUID="root" EGID="root" SGID="root" FSGID="root"
+type=SERVICE_START msg=audit(1742048913.190:757): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=nginx comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=failed'UID="root" AUID="unset"
+type=SERVICE_START msg=audit(1742049269.258:763): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=nginx comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'UID="root" AUID="unset"
+type=SERVICE_STOP msg=audit(1742049412.578:767): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=nginx comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'UID="root" AUID="unset"
+type=AVC msg=audit(1742049412.636:768): avc:  denied  { name_bind } for  pid=7006 comm="nginx" src=4881 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0
+type=SYSCALL msg=audit(1742049412.636:768): arch=c000003e syscall=49 success=no exit=-13 a0=7 a1=55e9c7f9d5d8 a2=1c a3=7ffd1afbdf54 items=0 ppid=1 pid=7006 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="nginx" exe="/usr/sbin/nginx" subj=system_u:system_r:httpd_t:s0 key=(null)ARCH=x86_64 SYSCALL=bind AUID="unset" UID="root" GID="root" EUID="root" SUID="root" FSUID="root" EGID="root" SGID="root" FSGID="root"
+type=SERVICE_START msg=audit(1742049412.644:769): pid=1 uid=0 auid=4294967295 ses=4294967295 subj=system_u:system_r:init_t:s0 msg='unit=nginx comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=failed'UID="root" AUID="unset"
+
+===с помощью утилиты audit2allow делаем модуль для разрешения работы nginx на нестандартном порту
+[root@selinux ~]# grep nginx /var/log/audit/audit.log | audit2allow -M nginx
+******************** IMPORTANT ***********************
+To make this policy package active, execute:
+
+semodule -i nginx.pp
+
+===теперь можно применить модуль nginx.pp в SELinux и запустить nginx 
+[root@selinux ~]# semodule -i nginx.pp
+[root@selinux ~]# systemctl restart nginx
+[root@selinux ~]# systemctl status nginx
+● nginx.service - The nginx HTTP and reverse proxy server
+   Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; vendor preset: disabled)
+   Active: active (running) since Sat 2025-03-15 14:48:53 UTC; 4s ago
+  Process: 7045 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
+  Process: 7044 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
+  Process: 7042 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
+ Main PID: 7047 (nginx)
+    Tasks: 3 (limit: 12375)
+   Memory: 5.0M
+   CGroup: /system.slice/nginx.service
+           ├─7047 nginx: master process /usr/sbin/nginx
+           ├─7048 nginx: worker process
+           └─7049 nginx: worker process
+
+Mar 15 14:48:53 selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
+Mar 15 14:48:53 selinux nginx[7044]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+Mar 15 14:48:53 selinux nginx[7044]: nginx: configuration file /etc/nginx/nginx.conf test is successful
+Mar 15 14:48:53 selinux systemd[1]: Started The nginx HTTP and reverse proxy server.
+[root@selinux ~]# curl localhost:4881
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+    <head>
+        <title>Test Page for the Nginx HTTP Server on AlmaLinux</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style type="text/css">
+            /*<![CDATA[*/
+            body {
+                background-color: #FAF5F5;
+                color: #000;
+                font-size: 0.9em;
+                font-family: sans-serif,helvetica;
+                margin: 0;
+                padding: 0;
+
+...
+========================
