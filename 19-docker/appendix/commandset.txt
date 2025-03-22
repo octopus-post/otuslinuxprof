@@ -1,0 +1,141 @@
+
+Установка Docker
+$ sudo apt update
+$ sudo apt install -y docker.io
+$ sudo systemctl enable --now docker 
+$ docker --version 
+
+# ⚠ Важно! Чтобы запускать Docker без sudo, добавьте себя в группу docker
+$ sudo usermod -aG docker $(whoami)
+
+# Запуск контейнера
+$ docker run -it ubuntu bash
+# -it – интерактивный режим с доступом к терминалу
+# ubuntu – имя образа
+# bash – команда, которая выполняется внутри контейнера
+# Запуск в фоновом режиме
+$ docker run -d nginx
+# -d – запуск в фоновом режиме (контейнер остается запущенным)
+Управление контейнерами
+# Список контейнеров
+$ docker ps # Показать запущенные контейнеры
+$ docker ps -a # Показать все контейнеры (включая остановленные)
+# Остановка и удаление контейнера
+$ docker stop <container_id> # Остановить контейнер
+$ docker rm <container_id> # Удалить контейнер
+$ docker rm $(docker ps -aq) # Удалить остановленные контейнеры, не удаляя вольюмы
+
+# Логи контейнера
+$ docker logs <container_id>
+    -f отслеживание обновлений лога
+# Выполнение команды внутри работающего контейнера
+$ docker exec -it <container_id> bash
+# Позволяет открыть терминал внутри работающего контейнера
+Работа с образами
+# Список доступных образов
+$ docker images
+# Загрузка образа из Docker Hub
+$ docker pull nginx
+# Удаление образа по имени или идентификатору   
+$ docker rmi nginx|xxxxx 
+
+# Удаление всех образов, которые не используются в контейнерах
+$ docker rmi $(docker images -q -f "dangling=true")
+
+# остановить контейнеры, удалить вместе с networks
+docker-compose down -v --rmi local 
+
+# Получить локальный IP контейнера
+docker inspect --format="{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}"
+
+# Полая очистка неиспользуемых контейнеров, сетей, образов и при указании вольюмов
+docker system prune -a -f --volume 
+
+# Создание образа с помощью Dockerfile
+FROM ubuntu                                     < используемый образ
+RUN apt update && apt install -y python3        < 
+CMD ["python3", "--version"]                    < команды внутри контейнера 
+
+# Сборка образа
+$ docker build -t my-python-app .               < -t имя, . - директория образа
+# Запуск контейнера из образа
+$ docker run my-python-app
+
+Работа с томами (Volumes)
+# Создание и подключение тома
+$ docker volume create myvolume
+$ docker run -v myvolume:/data -it ubuntu bash
+# Теперь файлы в /data контейнера будут сохраняться даже после
+его удаления
+
+# Просмотр списка томов
+$ docker volume ls
+# Удаление тома
+$ docker volume rm myvolume
+
+
+Работа с сетями
+# Список сетей
+$ docker network ls
+# Создание сети
+$ docker network create mynetwork
+# Запуск контейнеров в одной сети
+$ docker run --network=mynetwork --name web -d nginx
+$ docker run --network=mynetwork --name app -it ubuntu bash
+# Теперь контейнер app может обращаться к web по имени web
+# Удаление сети
+$ docker network rm mynetwork
+
+Dockerfile описывает:
+● Какой базовый образ использовать
+● Какие зависимости установить
+● Какие файлы добавить
+● Какие команды выполнять при запуске контейнера
+
+Основные инструкции Dockerfile
+Инструкция Описание
+FROM        Определяет базовый образ (например, FROM ubuntu)
+RUN         Выполняет команду во время сборки (например, RUN apt update && apt install -y curl)
+COPY        Копирует файлы в контейнер (например, COPY . /app)
+WORKDIR     Устанавливает рабочую директорию внутри контейнера
+CMD         Определяет команду, которая будет выполняться при запуске контейнера
+ENTRYPOINT  Аналог CMD, но команда не может быть переопределена при запуске
+
+***
+COPY — копирует в контейнер файлы и папки.
+ADD — копирует файлы и папки в контейнер, может распаковывать локальные .tar-файлы.
+
+
+Docker Compose
+инструмент для описания и управления многоконтейнерными приложениями с помощью файла конфигурации (docker-compose.yml).
+
+# Запуск всех контейнеров
+$ docker compose up -d
+# -d – запускает контейнеры в фоновом режиме
+# Просмотр списка запущенных сервисов
+$ docker compose ps
+#Просмотр логов сервисов
+$ docker compose logs -f
+
+
+=========================
+Команды для выполнения ДЗ:
+docker ps - просмотреть список запущенных контейнеров
+docker ps -a - просмотреть список всех контейнеров
+docker run -d -p port:port container_name - запуск нового контейнера с пробросом портов
+docker stop container_name - остановка контейнера
+docker logs container_name - вывод логов контейнеров
+docker inspect container_name - информация по запущенному контейнеру
+docker build -t dockerhub_login/reponame:ver - билд нового образа
+docker push/pull - отправка/получение образа из docker-registry
+docker exec -it container_name bash - выполнить команду внутри оболочки контейнера 
+(в данном примере мы выполняем команду “bash” внутри контейнера и попадаем в оболочку, внутрь контейнера)
+
+Шаблон для работы с Dockerfile
+Что должно быть Dockerfile:
+
+FROM image name
+RUN apt update -y && apt upgrade -y
+COPY или ADD filename /path/in/image
+EXPOSE port openning
+CMD or ENTRYPOINT or both

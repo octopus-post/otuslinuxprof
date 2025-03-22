@@ -1,0 +1,64 @@
+docker network
+
+типы:
+bridge network
+host network 
+none network
+overlay network - docker swarm (оркестратор)
+macvlan network (не используется в продакшене)
+
+docker  run -dt -name k1 nginx:alpine
+docker inspect k1 
+
+docker network inspect bridge 
+docker network ls 
+
+docker stop ...
+docker container prune
+
+docker network create --driver bridge alpine 
+docker network ls 
+
+docker run -dt --name alpine1 --network apline alpine ash
+docker run -dt --name alpine2 --network apline alpine ash
+docker network inspect alpine 
+
+docker exec -it alpine1 sh
+
+docker network connect bridge alpine2 - добавить alpine2 в подсеть, где есть alpine3
+
+================================
+0:33 Volumes
+
+tmpfsvolumes
+Volume
+bindvolume 
+====
+bindvolume 
+
+docker run -d --name devtest -v my-vol:/app node:lts 
+docker run -d --name devtest -v "$(pwd)"/target:/app node:lts 
+
+docker run -d --name devtest --mount -type=bind,source="$(pwd)"/target:/app node:lts 
+===
+Volume 
+ 
+docker volume ls
+
+/var/lib/docker/volumes/ ...
+
+====
+0:48 tmpfs      < для быстрого доступа к данным
+
+... --mount -type=tmpfs     
+--tmpfs /app                краткая форма
+
+======================
+docker-registry     < образы контейнеров 
+
+локальный docker-registry  
+goharbor.io 
+
+=================
+docker swarm
+

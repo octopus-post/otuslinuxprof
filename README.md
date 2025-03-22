@@ -20,3 +20,5 @@
 | 16. Управление памятью | [16-memory](./16-memory/) |
 | 17. namespace cgroup | [17-namespaces & cgroup](./17-namespaces%20cgroup/) |
 | 18. SELinux| [18-selinux](./18-selinux/) |
+| 19. Docker | [19-docker](./19-docker/) |
+| 20. Docker. Volumes and Networks |  |

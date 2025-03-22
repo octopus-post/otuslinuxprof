@@ -1,0 +1,54 @@
+
+# запускаем сборку образа nginx:alpine
+docker build -t octopuspost/octopus-post:nginx_stable-alpine3.17 .
+
+root@ubuntu-docker:/home/smith/docker-nginx-alpine# docker images
+REPOSITORY                 TAG                       IMAGE ID       CREATED         SIZE
+octopuspost/octopus-post   nginx_stable-alpine3.17   8e5659de7d8c   3 minutes ago   41.1MB
+nginx                      stable-alpine3.17         249f59e1dec7   23 months ago   41.1MB
+
+# запущен контейнер 
+docker run -d --name ngx -p 8080:80 octopuspost/octopus-post:nginx_stable-alpine3.17 
+
+root@ubuntu-docker:/home/smith/docker-nginx-alpine# docker ps
+CONTAINER ID   IMAGE                                              COMMAND                  CREATED         STATUS         PORTS                                   NAMES
+88e1f165b7cf   octopuspost/octopus-post:nginx_stable-alpine3.17   "/docker-entrypoint.…"   2 minutes ago   Up 2 minutes   0.0.0.0:8080->80/tcp, :::8080->80/tcp   ngx
+
+# стартовая страница nginx изменена перед сборкой образа
+# проверяем доступность экземпляра nginx с хоста 
+root@ubuntu-docker:/home/smith/docker-nginx-alpine# curl localhost:8080
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>Это стартовая страница nginx:alpine, запущеного в docker-контейнере на Ubuntu24.04.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+
+# dockerhub
+root@ubuntu-docker:/home/smith/docker-nginx-alpine# docker push octopuspost/octopus-post:nginx_stable-alpine3.17 
+The push refers to repository [docker.io/octopuspost/octopus-post]
+f3b7288d4137: Pushed 
+7388ed75460c: Mounted from library/nginx 
+66afb7c3e6d1: Mounted from library/nginx 
+439be94dd989: Mounted from library/nginx 
+08761a690f84: Mounted from library/nginx 
+419b89bbfa3b: Mounted from library/nginx 
+5fa2288e0d6e: Mounted from library/nginx 
+f4111324080c: Mounted from library/nginx 
+nginx_stable-alpine3.17: digest: sha256:072c61862460ee732a43646a7a7d3e491f6b1d32368bb5aa1dd99a91cff11b89 size: 1988
