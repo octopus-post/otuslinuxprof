@@ -1,0 +1,70 @@
+Источник: https://otus.ru/nest/post/881/
+Разворачиваем Harbor
+DevOps → Полезные материалы по DevOps
+Теги: docker, harbor
+
+DevOps_Deep_14.8-5020-fd2b08.png
+
+Встала задача развернуть приватный репозиторий, выбор пал на харбор, с учётом его интеграции с clair, notary. Также он интегрирован с chartmuseum, но эту его особенность пока не исследовал. 
+
+В дальнейших статьях я опишу настройку пайплайна в gitlab со сборкой образа, размещением его в харбор, проверкой образа на уязвимости и размещением отчёта.
+Предварительно создаём self-signed ключи
+
+openssl genrsa -out ca.key 4096
+openssl req -x509 -new -nodes -sha512 -days 3650 -subj "/C=RU/ST=Moscow/L=Moscow/O=example/OU=MY company/CN=mycompany.net" -key ca.key -out ca.crt
+openssl genrsa -out harbor.mycompany.net.key 4096
+openssl req -sha512 -new -subj "/C=RU/ST=Moscow/L=Moscow/O=example/OU=My company/CN=mycompany.net" -key harbor.mycompany.net.key -out harbor.mycompany.net.csr
+openssl x509 -req -sha512 -days 3650 -extfile v3.ext -CA ca.crt -CAkey ca.key -CAcreateserial -in harbor.mycompany.net.csr -out harbor.mycompany.net.crt
+openssl x509 -inform PEM -in harbor.mycompany.net.crt -out harbor.mycompany.net.cert
+
+
+Закидываем серверные ключи в выделенный каталог
+
+sudo cp harbor.mycompany.crt /etc/ssl/certs/
+sudo cp harbor.mycompany.key /etc/ssl/certs/
+
+
+Скачиваем инсталлятор
+
+скачиваем harbor-offline-installer-v1.8.1.tgz
+распаковываем 
+заходим в директорию harbor
+Настраиваем harbor.yml
+
+hostname: harbor.mycompany.net
+
+https:
+# https port for harbor, default is 443
+port: 443
+# The path of cert and key files for nginx
+certificate: /etc/ssl/certs/harbor.mycompany.net.crt
+private_key: /etc/ssl/certs/harbor.mycompany.net.key
+
+harbor_admin_password: Harbor12345
+
+
+Запускаем инсталляцию
+
+sudo ./install.sh --with-clair --with-chartmuseum --with-notary
+
+
+Настраиваем docker на клиенте (у разработчика)
+
+mkdir /etc/docker/certs.d/harbor.mycompany.net/
+
+
+закидываем в этот каталог файлы
+
+/etc/docker/certs.d/harbor.mycompany.net/
+├── ca.crt
+├── harbor.mycompany.net.cert
+└── harbor.mycompany.net.key
+
+
+Собираем докер образ и кладём его в харбор:
+
+docker login
+docker build -t harbor.mycompany.net/<project>/<name>:<tag> .
+docker push harbor.mycompany.net/<project>/<name>:<tag>
+
+

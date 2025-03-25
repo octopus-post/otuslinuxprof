@@ -1,0 +1,11 @@
+
+self-signed ключи
+
+openssl genrsa -out ca.key 4096
+openssl req -x509 -new -nodes -sha512 -days 3650 -subj "/C=RU/ST=Moscow/L=Moscow/O=example/OU=MY company/CN=mycompany.net" -key ca.key -out ca.crt
+openssl genrsa -out harbor.mycompany.net.key 4096
+openssl req -sha512 -new -subj "/C=RU/ST=Moscow/L=Moscow/O=example/OU=My company/CN=mycompany.net" -key harbor.mycompany.net.key -out harbor.mycompany.net.csr
+openssl x509 -req -sha512 -days 3650 -extfile v3.ext -CA ca.crt -CAkey ca.key -CAcreateserial -in harbor.mycompany.net.csr -out harbor.mycompany.net.crt
+openssl x509 -inform PEM -in harbor.mycompany.net.crt -out harbor.mycompany.net.cert
+
+
