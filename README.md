@@ -21,4 +21,5 @@
 | 17. namespace cgroup | [17-namespaces & cgroup](./17-namespaces%20cgroup/) |
 | 18. SELinux| [18-selinux](./18-selinux/) |
 | 19. Docker | [19-docker](./19-docker/) |
-| 20. Docker. Volumes and Networks |  |
+| 20. Docker. Volumes and Networks | [20-docker_volumes_networks](./20-docker_volumes_networks/) |
+| 21. Мониторинг | [21-monitoring](./21-monitoring/) |
