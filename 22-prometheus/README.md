@@ -47,5 +47,15 @@
   
 ### Комментарии к выполнению задания:
 
+1. Список node в Prometheus [screnshot1](./files/screenshot-prometheus_node_list.png).
+2. Скриншот с Grafana со списком node (использован шаблон дашборда из репозитория Grafana) [screenshot2](./files/screenshot-grafana_nodes.png)
+3. Скриншот дашборда с метриками памяти, процессора, диска и сети [screenshot3](./files/screenshot-grafana_my_dashboard.png)
+4. Файл конфигурации Prometheus [prometheus.yml](./files/prometheus.yml)
+
 ### Links:
 
+- [prometheus.io ](https://prometheus.io/)
+- [https://www.yamllint.com/](https://www.yamllint.com/)
+- https://grafana.com/grafana/dashboard
+- [https://jsonnet.org/](https://jsonnet.org/)
+  
