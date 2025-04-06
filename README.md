@@ -23,3 +23,6 @@
 | 19. Docker | [19-docker](./19-docker/) |
 | 20. Docker. Volumes and Networks | [20-docker_volumes_networks](./20-docker_volumes_networks/) |
 | 21. Мониторинг | [21-monitoring](./21-monitoring/) |
+| 22. Prometheus | [22-prometheus](./22-prometheus/)|
+| 23. Zabbix | [23-zabbix](./23-zabbix/)|
+| 24. Пользователи и группы. Авторизация и аутентификация | [24-users_groups](./24-users_groups/)|
