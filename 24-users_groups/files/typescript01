@@ -1,0 +1,110 @@
+Less24
+Typescript01
+
+##################################
+Создание пользователей и добавление в группу
+##################################
+
+root@pam:~# useradd otusadm && useradd otususer
+root@pam:~# cat /etc/passwd
+...
+otusadm:x:1001:1001::/home/otusadm:/bin/sh
+otususer:x:1002:1002::/home/otususer:/bin/sh
+
+root@pam:~# echo "otusadm:Otus2025!" | chpasswd
+root@pam:~# echo "otususer:Otus2025!" | chpasswd
+
+root@pam:~# groupadd -f admin
+
+root@pam:~# usermod otusadm -aG admin \
+    && usermod root -aG admin \
+    && usermod vagrant -aG admin
+
+##################################
+### Проверяем пользователей в группе admin
+##################################
+
+root@pam:~# cat /etc/group | grep admin
+admin:x:118:otusadm,root,vagrant
+
+##################################
+Подключение пользователя  по ssh
+##################################
+
+ ╭─alex@smith in /mnt/hdd1/libvirt/iso took 0s
+ ╰─λ ssh otususer@192.168.50.100
+The authenticity of host '192.168.50.100 (192.168.50.100)' can't be established.
+ED25519 key fingerprint is SHA256:Xc4DVXFh02K31W81bNqNNnrkIUeYAU5yIbUozfc+aRY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '192.168.50.100' (ED25519) to the list of known hosts.
+otususer@192.168.50.100's password: 
+Welcome to Ubuntu 22.04.4 LTS (GNU/Linux 5.15.0-119-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Sun Apr  6 08:50:18 UTC 2025
+
+  System load:  0.0               Processes:             105
+  Usage of /:   15.4% of 9.51GB   Users logged in:       1
+  Memory usage: 21%               IPv4 address for ens5: 192.168.121.154
+  Swap usage:   0%
+...
+$ 
+
+##################################
+# Создание скрипта проверки пользователя
+##################################
+nano /usr/local/bin/login.sh
+# Добавление прав на исполнение файла
+chmod +x /usr/local/bin/login.sh
+
+# Добавление модуля pam_exec и скрипта в файл /etc/pam.d/sshd
+...
+auth required pam_exec.so debug /usr/local/bin/login.sh
+...
+
+##################################
+# Авторизация пользователя otusadm
+##################################
+
+ ╭─alex@smith in /mnt/hdd1/libvirt/iso took 2m43s
+ ╰─λ date
+Вс 06 апр 2025 17:02:58 +07
+
+ ╭─alex@smith in /mnt/hdd1/libvirt/iso took 0s
+ ╰─λ ssh otusadm@192.168.50.100
+otusadm@192.168.50.100's password: 
+Welcome to Ubuntu 22.04.4 LTS (GNU/Linux 5.15.0-119-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Sun Apr  6 10:03:06 UTC 2025
+
+  System load:  0.0               Processes:             108
+  Usage of /:   16.4% of 9.51GB   Users logged in:       1
+  Memory usage: 22%               IPv4 address for ens5: 192.168.121.154
+  Swap usage:   0%
+
+##################################
+# Авторизация пользователя otususer
+##################################
+
+ ╭─alex@smith in /mnt/hdd1/libvirt/iso took 1m18s
+ ╰─λ date
+Вс 06 апр 2025 17:04:22 +07
+
+ ╭─alex@smith in /mnt/hdd1/libvirt/iso took 0s
+ ╰─λ ssh otususer@192.168.50.100
+otususer@192.168.50.100's password: 
+Permission denied, please try again.
+otususer@192.168.50.100's password: 
+Permission denied, please try again.
+otususer@192.168.50.100's password: 
+
+
+#########################################################################

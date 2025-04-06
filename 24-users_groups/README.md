@@ -12,7 +12,7 @@
 
 ### Цель: 
 - рассмотреть механизмы авторизации и аутентификации;
-- объяснить какие бывают права у пользовталей;
+- объяснить какие бывают права у пользователей;
 - управлять правами с помощью sudo, umask. sgid, suid и более сложными инструментами как PAM и ACL, PolicyKit.
 - научиться создавать пользователей и добавлять им ограничения;
   
@@ -38,6 +38,13 @@
   
 ### Комментарии к выполнению задания:
 
+> _Задание выполнено c использованием Vagrant, libvirt, vagrant box cloud-image/ubuntu-22.04 версия 20240823.0.0_
+
+- [Vagrantfile](./files/Vagrantfile)
+- [Выполянемые команды и вывод](./files/typescript01)
+- [Скрипт проверки пользователя](./files/login.sh)
+- [Конфиг /etc/pam.d/sshd](./files/sshd)
+
 
 ### Links:
 
@@ -53,3 +60,4 @@
 - [https://losst.pro/nastrojka-pam-v-linux](https://losst.pro/nastrojka-pam-v-linux)
 - [https://github.com/linux-pam/linux-pam](https://github.com/linux-pam/linux-pam)
 - [digitalocean: how-to-edit-the-sudoers-file](https://www.digitalocean.com/community/tutorials/how-to-edit-the-sudoers-file)  
+- [https://www.gnu.org/software/coreutils/manual/html_node/Changing-Special-Mode-Bits.html](https://www.gnu.org/software/coreutils/manual/html_node/Changing-Special-Mode-Bits.html)
