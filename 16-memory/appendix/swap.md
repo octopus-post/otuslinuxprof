@@ -46,7 +46,12 @@ Swap: 4,0Gi 0B 4,0Gi
 
 Если строка swap отсутствует, может иметь смысл ее создать. В одну команду это можно сделать так (от пользователя root):
 ```shell
-fallocate -l 4G /swapfile; dd if=/dev/zero of=/swapfile bs=1024 count=4194304; chmod 600 /swapfile; mkswap /swapfile; swapon /swapfile; echo "/swapfile swap swap defaults 0 0">> /etc/fstab
+fallocate -l 4G /swapfile
+dd if=/dev/zero of=/swapfile bs=1024 count=4194304
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo "/swapfile swap swap defaults 0 0">> /etc/fstab
 ```
 Давайте разберем последовательность команд:
 
