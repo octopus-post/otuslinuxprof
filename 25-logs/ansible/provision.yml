@@ -1,0 +1,106 @@
+- name: Start NGINX server
+#  gather_facts: false
+  hosts: otus_web
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache=yes
+      tags:
+        - update apt
+
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: latest
+      tags:
+        - nginx-package
+
+    - name: Edit nginx.conf for sending logs to the server
+      ansible.builtin.lineinfile:
+        path: '/etc/nginx/nginx.conf'
+        regexp: "{{item.reg}}"
+        insertafter: "{{item.ins}}"
+        line: "{{item.line}}"
+      with_items:
+        - { reg: '^access_log', ins: '^(\s*)access_log.*', line: 'access_log syslog:server=192.168.56.15:514,tag=nginx_access,severity=info combined;' }
+        - { reg: '^error_log', ins: '^\s*error_log.*', line: 'error_log  syslog:server=192.168.56.15:514,tag=nginx_error;' }
+      notify:
+        - Restart nginx
+      tags:
+        - nginx-logs
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+        enabled: true
+
+- name: Start rsyslog 
+  hosts: otus_log
+  become: true
+
+  tasks:
+  - name: Uncomment lines in rsyslog config
+    ansible.builtin.replace:
+      path: "/etc/rsyslog.conf"
+      regexp: "{{item.reg}}"
+      replace: "{{item.line}}"
+    with_items:
+      - { reg: '^\#(module\(load=\"imudp\"\))', line: '\1' }
+      - { reg: '^\#(input\(type=\"imudp\" port=\"514\"\))', line: '\1'}
+      - { reg: '^\#(module\(load=\"imtcp\"\))', line: '\1'}
+      - { reg: '^\#(input\(type=\"imtcp\" port=\"514\"\))', line: '\1'}
+
+  - name: Add lines in rsyslog config
+    ansible.builtin.lineinfile:
+      path: "/etc/rsyslog.conf"
+      line: '{{ item }}'
+    with_items:
+      - '#Add remote logs'
+      - '$template RemoteLogs,"/var/log/rsyslog/%HOSTNAME%/%PROGRAMNAME%.log"'
+      - '*.* ?RemoteLogs'
+      - '& ~'
+    notify:
+      - Restart rsyslog
+  handlers:
+    - name: Restart rsyslog
+      ansible.builtin.systemd:
+        name: rsyslog
+        state: restarted
+        enabled: true
+- name: Start rsyslog on simple
+  hosts: otus_simple
+  become: true
+  tasks:
+    - name: Create config on simple
+      ansible.builtin.file:
+        path: /etc/rsyslog.d/all.conf
+        state: touch
+        mode: u=rw,g=r,o=r
+    - name: Add filter to config rsyslog
+      ansible.builtin.lineinfile:
+        dest: '/etc/rsyslog.d/all.conf'
+        regexp: '^'
+        line: '*.* @@192.168.65.15:514'
+        state: present
+      notify:
+        - Restart rsyslog
+
+  handlers:
+    - name: Restart rsyslog
+      ansible.builtin.systemd:
+        name: rsyslog
+        state: restarted
+        enabled: true
+
+- name: Set timezone
+  hosts: otus_all
+  become: true
+  tasks:
+    - name: Set timezone to Asia/Novosibirsk
+      community.general.timezone:
+        name: Asia/Novosibirsk
+...
