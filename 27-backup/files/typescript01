@@ -1,0 +1,123 @@
+### Инициализация репозитория borg на backup сервере с client сервера
+vagrant@27client:~/test_borgclient$ borg init --encryption=repokey borg@192.168.11.160:/var/backup/
+Enter passphrase for key '/home/vagrant/.ssh/id_rsa': 
+Enter new passphrase: 
+Enter same passphrase again: 
+Do you want your passphrase to be displayed for verification? [yN]: y
+Your passphrase (between double-quotes): ""
+Make sure the passphrase displayed above is exactly what you wanted.
+
+By default repositories initialized with this version will produce security
+errors if written to with an older version (up to and including Borg 1.0.8).
+
+If you want to use these older versions, you can disable the check by running:
+borg upgrade --disable-tam ssh://borg@192.168.11.160/var/backup
+
+See https://borgbackup.readthedocs.io/en/stable/changes.html#pre-1-0-9-manifest-spoofing-vulnerability for details about the security implications.
+
+IMPORTANT: you will need both KEY AND PASSPHRASE to access this repo!
+If you used a repokey mode, the key is stored in the repo, but you should back it up separately.
+Use "borg key export" to export the key, optionally in printable format.
+Write down the passphrase. Store both at safe place(s).
+
+vagrant@27client:~/test_borgclient$ 
+
+##### Проверка создания бэкапа
+vagrant@27client:~/test_borgclient$ borg create --stats --list borg@192.168.11.160:/var/backup/::"etc-{now:%Y-%m-%d_%H:%M:%S}" /etc
+Enter passphrase for key '/home/vagrant/.ssh/id_rsa': 
+...
+------------------------------------------------------------------------------
+Repository: ssh://borg@192.168.11.160/var/backup
+Archive name: etc-2025-04-20_11:03:40
+Archive fingerprint: 5cbdd84855339831720ab07c6847151713813e4b388036a7c5f44e49b9c8b02f
+Time (start): Sun, 2025-04-20 11:03:47
+Time (end):   Sun, 2025-04-20 11:03:51
+Duration: 3.33 seconds
+Number of files: 671
+Utilization of max. archive size: 0%
+------------------------------------------------------------------------------
+                       Original size      Compressed size    Deduplicated size
+This archive:                2.09 MB            924.92 kB            901.53 kB
+All archives:                2.09 MB            924.29 kB            966.70 kB
+
+                       Unique chunks         Total chunks
+Chunk index:                     641                  662
+------------------------------------------------------------------------------
+vagrant@27client:~/test_borgclient$ 
+
+### Проверка созданных бэкапов
+vagrant@27client:~/test_borgclient$ borg list borg@192.168.11.160:/var/backup/
+Enter passphrase for key '/home/vagrant/.ssh/id_rsa': 
+etc-2025-04-20_11:03:40              Sun, 2025-04-20 11:03:47 [5cbdd84855339831720ab07c6847151713813e4b388036a7c5f44e49b9c8b02f]
+etc-2025-04-20_11:10:20              Sun, 2025-04-20 11:10:29 [6132c0063e1c7d68687ae3cb23626e04e22cfee5e6e2ba6f56c7dc2d3a49c69c]
+vagrant@27client:~/test_borgclient$ 
+
+### Смотрим список файлов, например, последнего бэкапа:
+
+borg list borg@192.168.11.160:/var/backup/::etc-2025-04-20_11:10:20
+Enter passphrase for key '/home/vagrant/.ssh/id_rsa': 
+...
+drwxr-xr-x root   root          0 Mon, 2021-09-06 10:51:02 etc/usb_modeswitch.d
+-rw-r--r-- root   root       1711 Sun, 2025-04-20 10:05:05 etc/passwd-
+-rw-r--r-- root   root        784 Sun, 2025-04-20 10:05:06 etc/group
+-rw-r--r-- root   root         21 Sun, 2025-04-20 10:05:07 etc/subuid
+-rw-r--r-- root   root         21 Sun, 2025-04-20 10:05:07 etc/subgid
+-rw-r--r-- root   root          9 Sun, 2025-04-20 10:05:37 etc/mailname
+-rw-r--r-- root   root        205 Sun, 2025-04-20 10:05:40 etc/fstab
+-rw-r--r-- root   root       1762 Sun, 2025-04-20 10:05:41 etc/passwd
+-rw-r--r-- root   root      20039 Sun, 2025-04-20 10:07:56 etc/ld.so.cache
+vagrant@27client:~/test_borgclient$ 
+
+### Восстанавливаем файлы etc/hostname etc/group из бэкапа:
+vagrant@27client:~/test_borgclient$ borg extract borg@192.168.11.160:/var/backup/::etc-2025-04-20_11:03:40 etc/hostname
+Enter passphrase for key '/home/vagrant/.ssh/id_rsa': 
+vagrant@27client:~/test_borgclient$ borg extract borg@192.168.11.160:/var/backup/::etc-2025-04-20_11:03:40 etc/group
+Enter passphrase for key '/home/vagrant/.ssh/id_rsa': 
+vagrant@27client:~/test_borgclient$ ll
+total 12
+drwxrwxr-x 3 vagrant vagrant 4096 Apr 20 11:26 ./
+drwxr-x--- 8 vagrant vagrant 4096 Apr 20 11:24 ../
+drwx------ 2 vagrant vagrant 4096 Apr 20 11:27 etc/
+vagrant@27client:~/test_borgclient$ ll ./etc/
+total 16
+drwx------ 2 vagrant vagrant 4096 Apr 20 11:27 ./
+drwxrwxr-x 3 vagrant vagrant 4096 Apr 20 11:26 ../
+-rw-r--r-- 1 vagrant vagrant  784 Apr 20 10:05 group
+-rw-r--r-- 1 vagrant vagrant    9 Apr 20 10:05 hostname
+vagrant@27client:~/test_borgclient$ 
+
+
+### проверка автоматического создания бэкапов, работа таймера установлена на 1 мин.
+root@27client:~# systemctl list-timers --all
+NEXT                        LEFT               LAST                        PASSED       UNIT                           ACTIVATES                     >
+Sun 2025-04-20 14:48:25 UTC 23s left           Sun 2025-04-20 14:47:25 UTC 36s ago      borg-backup.timer              borg-backup.service
+Sun 2025-04-20 21:27:14 UTC 6h left            n/a                         n/a          apt-daily.timer                apt-daily.service
+Mon 2025-04-21 00:00:00 UTC 9h left            n/a                         n/a          dpkg-db-backup.timer           dpkg-db-backup.service
+Mon 2025-04-21 00:00:00 UTC 9h left            n/a                         n/a          logrotate.timer                logrotate.service
+Mon 2025-04-21 00:56:39 UTC 10h left           n/a                         n/a          fstrim.timer                   fstrim.service
+Mon 2025-04-21 06:10:51 UTC 15h left           n/a                         n/a          apt-daily-upgrade.timer        apt-daily-upgrade.service
+Mon 2025-04-21 07:53:09 UTC 17h left           n/a                         n/a          man-db.timer                   man-db.service
+Mon 2025-04-21 10:09:49 UTC 19h left           Sun 2025-04-20 10:09:49 UTC 4h 38min ago update-notifier-download.timer update-notifier-download.servi>
+Mon 2025-04-21 10:19:49 UTC 19h left           Sun 2025-04-20 10:19:49 UTC 4h 28min ago systemd-tmpfiles-clean.timer   systemd-tmpfiles-clean.service
+Mon 2025-04-21 11:37:26 UTC 20h left           Sun 2025-04-20 12:52:00 UTC 1h 56min ago motd-news.timer                motd-news.service
+Sun 2025-04-27 03:10:21 UTC 6 days left        n/a                         n/a          e2scrub_all.timer              e2scrub_all.service
+Sun 2025-05-04 01:00:47 UTC 1 week 6 days left n/a                         n/a          update-notifier-motd.timer     update-notifier-motd.service
+n/a                         n/a                n/a                         n/a          apport-autoreport.timer        apport-autoreport.service
+n/a                         n/a                n/a                         n/a          snapd.snap-repair.timer        snapd.snap-repair.service
+n/a                         n/a                n/a                         n/a          ua-timer.timer                 ua-timer.service
+
+15 timers listed.
+
+### список созданных бэкапов по таймеру
+rroot@27client:~# borg list borg@192.168.11.160:/var/backup/
+etc-2025-04-20_11:03:40              Sun, 2025-04-20 11:03:47 [5cbdd84855339831720ab07c6847151713813e4b388036a7c5f44e49b9c8b02f]
+etc-2025-04-20_14:45:16              Sun, 2025-04-20 14:45:18 [f710823320bbc9f6399ad6bf3f4385846df2a2ec05cb26c3ea81183b1f753c4f]
+etc-2025-04-20_14:46:23              Sun, 2025-04-20 14:46:25 [cf44bbdf1e99dac591a5a88de3758832c90d837c24bbd6ee712f9c4d7133866c]
+etc-2025-04-20_14:47:25              Sun, 2025-04-20 14:47:27 [cd34329d273df1ea79436688ed42b2a3f2f0e6638763bceac77edbe6e1beac05]
+etc-2025-04-20_14:48:50              Sun, 2025-04-20 14:48:52 [42c974e27abcfaac426c41dfb214964e01e481d42e3b0702ec55eb6b1877d55e]
+etc-2025-04-20_14:50:16              Sun, 2025-04-20 14:50:18 [aee44ea5e74ed0d99f80bf2909af8f0d3542206dce700ba0230b1b1b9d4c1b40]
+etc-2025-04-20_14:51:50              Sun, 2025-04-20 14:51:52 [c2694e14a1dc712d5623d61977205cdbc2c14315a1884adb489ba4e6e6e5e747]
+etc-2025-04-20_14:53:50              Sun, 2025-04-20 14:53:52 [714450a39adb9988a045435da9f4451fc8e38b9da1e10b0dc21020e6df095021]
+etc-2025-04-20_14:55:16              Sun, 2025-04-20 14:55:19 [6076f5247c9d6cfb0dde635b50a40aefba20650a3d6b50c560c41cf8c3cd99e7]
+etc-2025-04-20_14:56:50              Sun, 2025-04-20 14:56:52 [9a340105c91ca1faa5e094dcbd2fe99ea0df0e81f45ae61810906ba8793b9741]
+root@27client:~# 

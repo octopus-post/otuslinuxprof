@@ -1,0 +1,65 @@
+- name: Install borg
+#  gather_facts: false
+  hosts: otus_all
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+      tags:
+        - update apt
+
+    - name: Install borg
+      ansible.builtin.apt:
+        name: borgbackup
+        state: present
+      tags:
+        - borg-package
+- name: Setup user borg
+  hosts: otus_server
+  become: true
+  tasks:
+    - name: Create user borg
+      ansible.builtin.user:
+        name: borg
+        create_home: true
+    - name: Create dir backup
+      ansible.builtin.file:
+        path: /var/backup
+        state: directory
+        owner: borg
+        group: borg
+        mode: '0744'
+    - name: Create ssh-auth
+      ansible.builtin.file:
+        path: /home/borg/.ssh
+        state: directory
+        owner: borg
+        group: borg
+        mode: '0700'
+    - name: Create auth_keys_file
+      ansible.posix.authorized_key:
+        user: borg
+        key: "{{ lookup('file', 'keys/less27_id_rsa.pub') }}"
+        state: present
+
+- name: Create ssh-key for user on client-server
+  hosts: otus_client
+  become: true
+  tasks:
+    - name: Copy SSH pubkey
+      ansible.builtin.copy:
+        src: 'keys/less27_id_rsa.pub'
+        dest: "/root/.ssh/id_rsa.pub"
+        owner: root
+        group: root
+        mode: '0600'
+    - name: Copy SSH privatekey
+      ansible.builtin.copy:
+        src: 'keys/less27_id_rsa'
+        dest: "/root/.ssh/id_rsa"
+        owner: root
+        group: root
+        mode: '0600'
+...

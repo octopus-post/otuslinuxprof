@@ -1,0 +1,20 @@
+192.168.11.160
+192.168.11.150
+[otus_server]
+27backup ansible_host=192.168.11.160 ansible_ssh_private_key_file=.vagrant/machines/27backup/libvirt/private_key
+[otus_client]
+27client ansible_host=192.168.11.150 ansible_ssh_private_key_file=.vagrant/machines/27client/libvirt/private_key
+
+[otus_all:children]
+otus_server
+otus_client
+
+
+; all:
+;   vars:
+;     ansible_user: ta
+;   hosts:
+;     ta-lxlt:
+;       ansible_host: 192.168.4.58
+;       ansible_ssh_private_key_file: ~/.ssh/ansible
+
