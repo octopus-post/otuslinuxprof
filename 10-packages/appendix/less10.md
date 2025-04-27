@@ -53,4 +53,3 @@
 |dpkg -L <package> |– список установленных файлов|
 
 
-[exemple shellspec.spec](https://github.com/nixuser/package-example/blob/main/shellspec.spec)

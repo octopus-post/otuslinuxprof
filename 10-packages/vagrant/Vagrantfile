@@ -1,0 +1,25 @@
+MACHINES = {
+  :"less10" => {
+              :box_name => "almalinux/8",
+              :cpus => 2,
+              :memory => 2048
+            }
+}
+
+Vagrant.configure("2") do |config|
+  MACHINES.each do |boxname, boxconfig|
+#    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.define boxname do |box|
+      box.vm.box = boxconfig[:box_name]
+      box.vm.host_name = boxname.to_s
+      box.vm.provider "libvirt" do |v|
+        v.memory = boxconfig[:memory]
+        v.cpus = boxconfig[:cpus]
+      end
+      box.vm.provision "shell", inline: <<-SHELL
+        yum install -y wget rpmdevtools rpm-build createrepo \
+          yum-utils cmake gcc git nano
+        SHELL
+    end
+  end
+end

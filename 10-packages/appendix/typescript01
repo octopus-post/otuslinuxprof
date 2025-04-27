@@ -1,0 +1,124 @@
+### Скачиваем архив с драйвером в пакете deb
+[root@alt10-template 1]# wget https://www.pantum.ru/wp-content/uploads/2024/07/pantum-ubuntu-driver-v1_1_123-8.zip
+--2025-04-23 11:44:29--  https://www.pantum.ru/wp-content/uploads/2024/07/pantum-ubuntu-driver-v1_1_123-8.zip
+Resolving www.pantum.ru (www.pantum.ru)... 91.135.156.111, 2a03:6f00:4::84df
+Connecting to www.pantum.ru (www.pantum.ru)|91.135.156.111|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 10188191 (9.7M) [application/zip]
+Saving to: 'pantum-ubuntu-driver-v1_1_123-8.zip'
+
+pantum-ubuntu-driver-v1_ 100%[================================>]   9.72M  9.26MB/s    in 1.0s    
+
+2025-04-23 11:44:30 (9.26 MB/s) - 'pantum-ubuntu-driver-v1_1_123-8.zip' saved [10188191/10188191]
+
+### Распаковываем архив zip
+[root@alt10-template]# unzip pantum-ubuntu-driver-v1_1_123-8.zip
+Archive:  pantum-ubuntu-driver-v1_1_123-8.zip
+   creating: Pantum Ubuntu Driver V1.1.123/
+  inflating: Pantum Ubuntu Driver V1.1.123/install.sh  
+   creating: Pantum Ubuntu Driver V1.1.123/Resources/
+  inflating: Pantum Ubuntu Driver V1.1.123/Resources/built_i386.sh  
+  inflating: Pantum Ubuntu Driver V1.1.123/Resources/built_x86-64.sh  
+  inflating: Pantum Ubuntu Driver V1.1.123/Resources/installer.c  
+  inflating: Pantum Ubuntu Driver V1.1.123/Resources/installer_i386  
+  inflating: Pantum Ubuntu Driver V1.1.123/Resources/installer_x86-64  
+  inflating: Pantum Ubuntu Driver V1.1.123/Resources/pantum_1.1.123-1_amd64.deb  
+  inflating: Pantum Ubuntu Driver V1.1.123/Resources/pantum_1.1.123-1_i386.deb  
+  inflating: Pantum Ubuntu Driver V1.1.123/Resources/uninstall  
+   creating: Pantum Ubuntu Driver V1.1.123/Resources/locale/
+....
+
+### Перепаковываем пакет pantum_1.1.123-1_amd64.deb в rpm утилитой epm для ОС Альт10
+[root@alt10-template Загрузки]# ll 
+drwxr-xr-x  2 user user     4096 апр 23 11:17 ./
+-rwxr--r--  1 user user  5003262 апр 23 11:17 pantum_1.1.123-1_amd64.deb
+-rw-r--r--  1 user user 10188191 апр 23 11:17 pantum-ubuntu-driver-v1_1_123-8.zip
+drwx------ 22 user user     4096 апр 23 11:06 ../
+[root@alt10-template Загрузки]# epm repack ./pantum_1.1.123-1_amd64.deb 
+будет использован eepm-rpmbuild для упаковки rpm
+
+Переупаковка /home/user/Загрузки/pantum_1.1.123-1_amd64.deb в локальный формат rpm (внутри /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir) ...
+ # alien --generate --to-rpm ../pantum_1.1.123-1_amd64.deb
+Warning: Skipping conversion of scripts in package pantum: postinst postrm preinst prerm
+Warning: Use the --scripts parameter to include the scripts.
+ # /usr/bin/env bash /etc/eepm/repack.d/generic.sh /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123 /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123-2.spec pantum /home/user/Загрузки/pantum_1.1.123-1_amd64.deb 
+WARNING: /home/user/Загрузки/pantum_1.1.123-1_amd64.deb.eepm.yaml is missed
+ # /usr/bin/env bash /etc/eepm/repack.d/pantum.sh /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123 /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123-2.spec pantum /home/user/Загрузки/pantum_1.1.123-1_amd64.deb 
+Removing /usr/local dir ...
+Scanning for required libs soname ...
+  Getting executable requires ...
+  Getting libs requires ...
+ # estrlist reg_wordexclude  libc.so.6()(64bit) libcups.so.2()(64bit) libcupsimage.so.2()(64bit) libdl.so.2()(64bit) libgcc_s.so.1()(64bit) libjpeg.so.8()(64bit) libm.so.6()(64bit) libpthread.so.0()(64bit) libstdc++.so.6()(64bit) libusb-1.0.so.0()(64bit) libz.so.1()(64bit) 
+  Getting internal provides ...
+ # estrlist reg_wordexclude libGDIPrintCMSLib-amd64.so libsane-pantum6500.so libsane-pantum6500.so.1 libsane-pantum6500.so.1.0.24 libsane-pantum_bm4200.so libsane-pantum_bm4200.so.1 libsane-pantum_bm4200.so.1.0.24 libsane-pantum_bm5200.so libsane-pantum_bm5200.so.1 libsane-pantum_bm5200.so.1.0.24 libsane-pantum_cm230.so libsane-pantum_cm230.so.1 libsane-pantum_cm230.so.1.0.24 libsane-pantum_mfp.so libsane-pantum_mfp.so.1 libsane-pantum_mfp.so.1.0.24 libsane.so.1 libc.so.6()(64bit) libcups.so.2()(64bit) libcupsimage.so.2()(64bit) libdl.so.2()(64bit) libgcc_s.so.1()(64bit) libjpeg.so.8()(64bit) libm.so.6()(64bit) libpthread.so.0()(64bit) libstdc++.so.6()(64bit) libusb-1.0.so.0()(64bit) libz.so.1()(64bit) 
+Requires: libc.so.6()(64bit) libcups.so.2()(64bit) libcupsimage.so.2()(64bit) libdl.so.2()(64bit) libgcc_s.so.1()(64bit) libjpeg.so.8()(64bit)
+Requires: libm.so.6()(64bit) libpthread.so.0()(64bit) libstdc++.so.6()(64bit) libusb-1.0.so.0()(64bit) libz.so.1()(64bit)
+ # /usr/bin/env bash /etc/eepm/repack.d/generic-post.sh /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123 /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123-2.spec pantum /home/user/Загрузки/pantum_1.1.123-1_amd64.deb 
+--- /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123-2.spec	2025-04-23 11:42:06.544102664 +0700
++++ /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123-2.spec.new	2025-04-23 11:42:06.599107077 +0700
+@@ -107,7 +107,7 @@
+ "/usr/lib/cups/filter/pt2013upgradeFilter"
+ "/usr/lib/cups/filter/ptm6700plusgdiFilter"
+ "/usr/lib/cups/filter/pt2510Filter"
+-%dir "/usr/lib64/"
++
+ %dir "/usr/lib64/sane/"
+ "/usr/lib64/sane/libsane-pantum_mfp.so.1.0.24"
+ "/usr/lib64/sane/libsane-pantum_bm4200.so.1.0.24"
+WARNING: There was some introduced system paths in the spec file
+ # /usr/bin/eepm-rpmbuild --buildroot /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123 --target x86_64 -bb /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123-2.spec
+предупреждение: Файл указан дважды: /opt/pantum/lib
+unknown, 0: Warning: using regular magic file `/etc/magic'
+unknown, 0: Warning: using regular magic file `/etc/magic'
++ umask 022
++ cd /var/tmp/tmp.DJIsz5DKWb/RPM/BUILD
++ /bin/rm -rf /var/tmp/tmp.DJIsz5DKWb/pantum_1.1.123-1_amd64.deb.tmpdir/pantum-1.1.123
++ RPM_EC=0
+++ jobs -p
++ exit 0
++ umask 022
++ cd /var/tmp/tmp.DJIsz5DKWb/RPM/BUILD
++ RPM_EC=0
+++ jobs -p
++ exit 0
+    Файл указан дважды: /opt/pantum/lib
+
+Адаптированные пакеты:
+    /home/user/Загрузки/pantum-1.1.123-epm1.repacked.2.x86_64.rpm
+[root@alt10-template Загрузки]# 
+
+### Проверка установки драйвера из пакета rpm
+### При попытке установки драйвера обнаружены неудовлетворённая зависимость
+[root@alt10-template]# rpm -ihv pantum-1.1.123-epm1.repacked.2.x86_64.rpm 
+ошибка: Неудовлетворенные зависимости:
+	libjpeg.so.8()(64bit) нужен для pantum-100:1.1.123-epm1.repacked.2.x86_64
+
+### Устанавливаем пакет libjpeg8
+[root@alt10-template]# apt-get install libjpeg8
+Чтение списков пакетов... Завершено
+Построение дерева зависимостей... Завершено
+Следующие НОВЫЕ пакеты будут установлены:
+  libjpeg8
+0 будет обновлено, 1 новых установлено, 0 пакетов будет удалено и 0 не будет обновлено.
+Необходимо получить 163kB архивов.
+После распаковки потребуется дополнительно 624kB дискового пространства.
+Получено: 1 http://10.171.18.254 c10f1/branch/x86_64/classic libjpeg8 2.1.0-alt1.1:sisyphus+272183.100.1.1@1621504279 [163kB]
+Получено 163kB за 0s (3949kB/s).
+Совершаем изменения...
+Подготовка...                               #################################################################################################### [100%]
+Обновление / установка...
+1: libjpeg8-2.1.0-alt1.1                    #################################################################################################### [100%]
+Завершено.
+
+### Устанавливаем драйвер
+
+[root@alt10-template]# rpm -ihv pantum-1.1.123-epm1.repacked.2.x86_64.rpm 
+Подготовка...                               #################################################################################################### [100%]
+Обновление / установка...
+1: pantum-100:1.1.123-epm1.repacked.2       #################################################################################################### [100%]
+Running /usr/lib/rpm/posttrans-filetriggers
+[root@alt10-template]# 
+
+
+
+
