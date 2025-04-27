@@ -1,0 +1,44 @@
+- name: Start NGINX server
+#  gather_facts: false
+  hosts: otus_web
+  become: true
+  vars:
+    nginx_listen_port: 8080
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache=yes
+      tags:
+        - update apt
+
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: latest
+      notify:
+        - restart nginx
+      tags:
+        - nginx-package
+
+#    - name: Update nginx config from template
+#     ansible.builtin.template:
+#        src: templates/nginx.conf.j2
+#        dest: /etc/nginx/nginx.conf
+#      notify:
+#        - reload nginx
+#      tags:
+#        - nginx-configuration
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+        enabled: true
+    - name: Reload nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
+...
