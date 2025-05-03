@@ -1,0 +1,27 @@
+---
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    ens6:
+      addresses:
+      - 192.168.0.2/28
+      routes:
+      - to: 192.168.255.8/30
+        via: 192.168.0.1
+
+      - to: 192.168.2.0/24
+        via: 192.168.0.1
+
+      - to: 192.168.255.4/30
+        via: 192.168.0.1
+
+      - to: 192.168.1.0/24
+        via: 192.168.0.1
+
+      - to: default
+        via: 192.168.0.1
+
+    ens7:
+      addresses:
+      - 192.168.50.12/24

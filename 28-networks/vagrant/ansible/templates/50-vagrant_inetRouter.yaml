@@ -1,0 +1,12 @@
+---
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    ens6:
+      addresses:
+      - 192.168.255.1/30
+ 
+    ens7:
+      addresses:
+      - 192.168.50.10/24

@@ -1,0 +1,77 @@
+# Проверка связанности серверов
+###============================================================
+# Проверка доступности интернета на сервере office1Server
+vagrant@office1Server:~$ ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=106 time=45.9 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=106 time=45.8 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=106 time=45.8 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=106 time=45.7 ms
+^C
+--- 8.8.8.8 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 45.730/45.781/45.857/0.046 ms
+
+vagrant@office1Server:~$ traceroute 8.8.8.8
+traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.2.129)  0.215 ms  0.133 ms  0.112 ms
+ 2  192.168.188.1 (192.168.188.1)  0.820 ms  0.807 ms  0.789 ms
+ 3  l5-130-81-254.novotelecom.ru (5.130.81.254)  1.429 ms  1.467 ms  1.408 ms
+ 4  10.245.139.89 (10.245.139.89)  1.396 ms  1.381 ms  1.332 ms
+ 5  10.245.139.22 (10.245.139.22)  1.642 ms  2.760 ms  1.615 ms
+ 6  l49-128-6.novotelecom.ru (178.49.128.6)  1.321 ms l49-129-82.novotelecom.ru (178.49.129.82)  1.713 ms  1.607 ms
+ 7  bbr03.spb.ertelecom.ru (188.234.152.203)  41.053 ms  41.036 ms  41.025 ms
+ 8  188x234x131x53.ertelecom.ru (188.234.131.53)  43.144 ms 188x234x131x159.ertelecom.ru (188.234.131.159)  42.401 ms 188x234x131x53.ertelecom.ru (188.234.131.53)  43.429 ms
+ 9  * dns.google (8.8.8.8)  45.826 ms  45.816 ms
+vagrant@office1Server:~$ 
+
+###============================================================
+### Проверка связанности серверов
+# office1Server -> CentralRouter
+root@office1Server:~# traceroute 192.168.0.2
+traceroute to 192.168.0.2 (192.168.0.2), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.2.129)  1.538 ms  1.390 ms  1.347 ms
+ 2  192.168.255.9 (192.168.255.9)  1.333 ms  1.308 ms  1.289 ms
+ 3  192.168.0.2 (192.168.0.2)  1.263 ms  1.321 ms  1.520 ms
+
+# office1Server -> office2Server
+root@office1Server:~# traceroute 192.168.1.2
+traceroute to 192.168.1.2 (192.168.1.2), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.2.129)  0.458 ms  0.463 ms  0.482 ms
+ 2  192.168.255.9 (192.168.255.9)  1.435 ms  1.422 ms  1.412 ms
+ 3  192.168.255.6 (192.168.255.6)  2.019 ms  2.008 ms  1.998 ms
+ 4  192.168.1.2 (192.168.1.2)  2.725 ms  2.648 ms  2.629 ms
+
+###============================================================
+# office2Server -> CentralRouter
+root@office2Server:~# traceroute 192.168.0.2
+traceroute to 192.168.0.2 (192.168.0.2), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.1.1)  0.383 ms  0.340 ms  0.294 ms
+ 2  192.168.255.5 (192.168.255.5)  0.791 ms  0.775 ms  0.763 ms
+ 3  192.168.0.2 (192.168.0.2)  1.504 ms  1.483 ms  1.472 ms
+
+# office2Server -> office1Server
+root@office2Server:~# traceroute 192.168.2.130
+traceroute to 192.168.2.130 (192.168.2.130), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.1.1)  0.570 ms  0.465 ms  1.107 ms
+ 2  192.168.255.5 (192.168.255.5)  1.086 ms  1.137 ms  1.167 ms
+ 3  192.168.255.10 (192.168.255.10)  1.278 ms  1.307 ms  2.044 ms
+ 4  192.168.2.130 (192.168.2.130)  2.265 ms  2.352 ms  2.342 ms
+
+###============================================================
+# CentralRouter  -> office1Server
+root@centralServer:~# traceroute 192.168.2.130
+traceroute to 192.168.2.130 (192.168.2.130), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.0.1)  1.057 ms  1.012 ms  0.994 ms
+ 2  192.168.255.10 (192.168.255.10)  1.834 ms  2.019 ms  1.997 ms
+ 3  192.168.2.130 (192.168.2.130)  3.173 ms  3.153 ms  3.030 ms
+ 
+ # CentralRouter  -> office2Server
+root@centralServer:~# traceroute 192.168.1.2
+traceroute to 192.168.1.2 (192.168.1.2), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.0.1)  0.568 ms  0.473 ms  0.439 ms
+ 2  192.168.255.6 (192.168.255.6)  1.438 ms  1.406 ms  1.445 ms
+ 3  192.168.1.2 (192.168.1.2)  2.052 ms  2.040 ms  2.029 ms
+
+###============================================================
+
