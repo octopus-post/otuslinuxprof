@@ -1,0 +1,100 @@
+- name: PXE-lab
+#  gather_facts: false
+  hosts: pxeserver
+  become: true
+  tasks:
+  - name: Set down ufw on inetRouter
+    ansible.builtin.systemd_service:
+      name: ufw
+      state: stopped
+      enabled: false
+#    when: (ansible_hostname == "inetRouter")
+  - name: Install dnsmasq
+    ansible.builtin.package:
+      name: dnsmasq
+      state: present
+      update_cache: true
+
+  - name: Setup pxe
+    ansible.builtin.template:
+      src: templates/pxe.conf
+      dest: /etc/dnsmasq.d/pxe.conf
+      owner: root
+      group: root
+      mode: "0644"
+
+  - name: Create a directory if it does not exist
+    ansible.builtin.file:
+      path: "{{ item.name }}"
+      state: directory
+      mode: "{{ item.mode }}"
+    with_items:
+      - { name: "/srv/tftp", mode: '0755'}
+      - { name: "/srv/images", mode: '0755'}
+      - { name: "/srv/ks", mode: '0755'}
+
+  - name: Download and Unarchive image for netboot
+    ansible.builtin.unarchive:
+      src: "http://cdimage.ubuntu.com/ubuntu-server/noble/daily-live/current/noble-netboot-amd64.tar.gz"
+      dest: "/srv/tftp/"
+      remote_src: true
+  - name: Download server image
+    ansible.builtin.get_url:
+      url: "http://cdimage.ubuntu.com/ubuntu-server/noble/daily-live/current/noble-live-server-amd64.iso"
+      dest: /srv/images/
+      force: false
+
+  # - name: Copy iso image to pxeserver
+  #   ansible.builtin.copy:
+  #     src: "/mnt/hdd1/libvirt/otus/kvm/iso//noble-live-server-amd64.iso"
+  #     dest: "/srv/images/"
+  #     force: false
+
+  - name: Install apache2
+    ansible.builtin.package:
+      name: apache2
+      state: present
+  - name: Setup apache2
+    ansible.builtin.template:
+      src: templates/ks-server.conf
+      dest: /etc/apache2/sites-available/ks-server.conf
+      owner: root
+      group: root
+      mode: "0644"
+  - name: Enable ks-server
+    ansible.builtin.command: a2ensite ks-server.conf
+    become: true
+
+
+  - name: Setup tftp
+    ansible.builtin.template:
+      src: templates/pxelinux.cfg
+      dest: /srv/tftp/amd64/pxelinux.cfg/default
+      owner: root
+      group: root
+      mode: "0644"
+
+  - name: Setup autoinstall server from image
+    ansible.builtin.template:
+      src: templates/user-data
+      dest: /srv/ks/user-data
+      owner: root
+      group: root
+      mode: "0644"
+  - name: Create meta-data
+    ansible.builtin.template:
+      src: templates/meta-data
+      dest: /srv/ks/meta-data
+      owner: root
+      group: root
+      mode: "0644"
+
+  - name: Restart apache2
+    ansible.builtin.systemd_service:
+      name: apache2 
+      state: restarted
+
+  - name: Restart dnsmasq
+    ansible.builtin.systemd_service:
+      name: dnsmasq
+      state: restarted

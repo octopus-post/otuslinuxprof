@@ -1,0 +1,4 @@
+[pxeserver]
+pxeserver ansible_host=192.168.50.10 ansible_user=vagrant ansible_ssh_private_key_file=.vagrant/machines/pxeserver/libvirt/private_key
+[pxeclient]
+pxeclient ansible_host=192.168.50.12 ansible_user=vagrant ansible_ssh_private_key_file=.vagrant/machines/pxeclient/libvirt/private_key

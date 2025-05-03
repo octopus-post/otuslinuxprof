@@ -1,0 +1,10 @@
+#cloud-config
+autoinstall:
+  version: 1
+  identity:
+     hostname: ubuntu22auto
+     username: ubuntulogin
+     password: <mkpasswd -m sha-512 ubuntupass>
+  ssh:
+     install-server: yes
+     allow-pw: yes

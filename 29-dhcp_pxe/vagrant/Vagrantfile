@@ -42,6 +42,6 @@ Vagrant.configure("2") do |config|
             #     '--boot4', 'none'
             # ]
 
-       end
+        end
     end
 end

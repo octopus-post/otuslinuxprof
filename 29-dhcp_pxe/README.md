@@ -58,9 +58,21 @@
 
 
 ### Комментарии к выполнению задания:
+> _Задание выполнено c использованием Vagrant, libvirt, vagrant box ubuntu/jammy64, noble-live-server-amd64.iso, noble-netboot-amd64.tar.gz_
 
+- [Vagrantfile](./vagrant/Vagrantfile)
+- [Ansible playbook](./vagrant/ansible/provision.yml)
+- [Файл user-data для автоматической установки ОС](./vagrant/ansible/templates/user-data)
+
+1. Развернут сервер сетевой установки ОС Ubuntu
+2. На клиентском хосте автоматически устанавливается ОС по сети  
+![screenshot1](./appendix/screenshot_pxeclient1.jpg)
+![screenshot2](./appendix/screenshot_pxeclient2.jpg)
+![screenshot3](./appendix/screenshot_pxeclient3.jpg)
 
 ### Links:
+
+- [Vagrant libvirt](https://vagrant-libvirt.github.io/vagrant-libvirt/configuration.html)
 
 - [Статья о TFTP](https://ru.wikipedia.org/wiki/Trivial_File_Transfer_Protocol)
 - [Статья о DHCP](https://ru.wikipedia.org/wiki/DHCP)
