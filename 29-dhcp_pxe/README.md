@@ -63,6 +63,7 @@
 - [Vagrantfile](./vagrant/Vagrantfile)
 - [Ansible playbook](./vagrant/ansible/provision.yml)
 - [Файл user-data для автоматической установки ОС](./vagrant/ansible/templates/user-data)
+- [Каталог с шаблонами файлов конфигураций](./vagrant/ansible/templates/)
 
 1. Развернут сервер сетевой установки ОС Ubuntu
 2. На клиентском хосте автоматически устанавливается ОС по сети  
