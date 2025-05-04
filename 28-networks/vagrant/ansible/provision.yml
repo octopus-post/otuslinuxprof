@@ -52,15 +52,15 @@
     become: true
     ignore_errors: true
 
-  # - name: Install traceroute
-  #   ansible.builtin.package:
-  #     name: traceroute
-  #     state: present
-  #     update_cache: true
+  - name: Install traceroute
+    ansible.builtin.package:
+      name: traceroute
+      state: present
+      update_cache: true
 
 
-  # - name: Restart all hosts
-  #   reboot:
-  #     reboot_timeout: 600
+  - name: Restart all hosts
+    reboot:
+      reboot_timeout: 600
 
 ...
