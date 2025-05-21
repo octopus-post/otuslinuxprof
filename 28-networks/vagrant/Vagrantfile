@@ -1,3 +1,7 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+ENV['VAGRANT_SERVER_URL'] = "https://hashicorp-releases.yandexcloud.net/vagrant/"
+
 MACHINES = {
   :inetRouter => {
         :box_name => "ubuntu/jammy64",
