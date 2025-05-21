@@ -1,0 +1,106 @@
+---
+- name: NetworkLab
+#  gather_facts: false
+  hosts: all
+  become: true
+  tasks:
+  - name: Set down ufw on the inetRouter
+    ansible.builtin.systemd_service:
+      name: ufw
+      state: stopped
+      enabled: false
+    when: (ansible_hostname == "inetRouter")
+
+  - name: Install some packages on the inetRouter
+    ansible.builtin.package:
+      name:
+        - knockd
+        - iptables-persistent
+        - netfilter-persistent
+      state: present
+      update_cache: true
+    when: (ansible_hostname == "inetRouter")
+
+  - name: Writes the /etc/default/knockd
+    ansible.builtin.template:
+      src: knockd.j2
+      dest: /etc/default/knockd
+      mode: "0400"
+    notify: Start knockd
+    when: (ansible_hostname == "inetRouter")
+
+  - name: Writes the knockd conf
+    ansible.builtin.template:
+      src: knockd.conf.j2
+      dest: /etc/knockd.conf
+      mode: "0640"
+    notify: Start knockd
+    when: (ansible_hostname == "inetRouter")
+
+  - name: Set up NAT on inetRouter
+    ansible.builtin.template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      owner: root
+      group: root
+      mode: "{{ item.mode }}"
+    with_items:
+      - { src: "iptables_rules.ipv4", dest: "/etc/iptables_rules.ipv4", mode: "0640" }
+      - { src: "iptables_restore", dest: "/etc/network/if-pre-up.d/iptables", mode: "0755" }
+    when: (ansible_hostname == "inetRouter")
+
+# This will load a state from a file, with a rollback in case of access loss
+  - name: Restore firewall state from a file
+    community.general.iptables_state:
+      state: restored
+      path: "/etc/iptables_rules.ipv4"
+    when: (ansible_hostname == "inetRouter")
+
+  - name: Set up forward packages across routers
+    ansible.posix.sysctl:
+      name: net.ipv4.conf.all.forwarding
+      value: '1'
+      state: present
+    when: "'routers' in group_names"
+
+  - name: Disable default route
+    ansible.builtin.template:
+#      src: 00-installer-config.yaml
+      src: 50-cloud-init.yaml
+#      dest: /etc/netplan/00-installer-config.yaml
+      dest: /etc/netplan/50-cloud-init.yaml
+      owner: root
+      group: root
+      mode: "0600"
+    when: (ansible_hostname != "inetRouter")
+
+  - name: Add default gateway for routes
+    ansible.builtin.template:
+      src: "50-vagrant_{{ansible_hostname}}.yaml"
+      dest: /etc/netplan/50-vagrant.yaml
+      owner: root
+      group: root
+      mode: "0600"
+
+  - name: Apply netplan config
+    ansible.builtin.command: netplan apply
+    become: true
+    ignore_errors: true
+
+  - name: Install traceroute
+    ansible.builtin.package:
+      name: traceroute
+      state: present
+      update_cache: true
+
+  handlers:
+    - name: Start knockd
+      ansible.builtin.service:
+        name: knockd
+        state: started
+
+
+  # - name: Restart all hosts
+  #   reboot:
+  #     reboot_timeout: 600
+...

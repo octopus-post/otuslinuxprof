@@ -1,0 +1,17 @@
+[options]
+    logfile = /var/log/knockd.log
+
+[opencloseSSH]
+    # последовательность и типы портов
+    sequence      = 7000,8000,9000
+    # максимальное время в секундах для совершения последовательности подключений
+    seq_timeout   = 15
+    # определяем какие флаги должны иметь пакеты, участвующие в последовательности
+    tcpflags      = syn
+    # command определяет путь и параметры вызываемой программы в случае обнаружения корректной последовательности.
+    # start_command по смыслу идентичен параметру command
+    start_command = /usr/sbin/iptables -A INPUT -s %IP% -p tcp --dport 22 -j ACCEPT
+    # cmd_timeout определяет временной интервал в секундах, по истечении которого запустится команда, определённая значением параметра stop_command, 
+    # т.е. можно открывать порт лишь на промежуток времени
+    cmd_timeout   = 10
+    stop_command  = /usr/sbin/iptables -D INPUT -s %IP% -p tcp --dport 22 -j ACCEPT
