@@ -9,6 +9,7 @@
     - [Критерии оценки:](#критерии-оценки)
     - [Комментарии к выполнению задания:](#комментарии-к-выполнению-задания)
       - [1. knocking port](#1-knocking-port)
+      - [2. FORWARD](#2-forward)
     - [Links:](#links)
 
 ### Цель: 
@@ -113,7 +114,7 @@ COMMIT
 COMMIT
 # Completed on Wed May 21 16:00:21 2025
 ```
-2. FORWARD
+#### 2. FORWARD
 - на сервере centralServer запущен nginx
 - на inetRouter2 настроен проброс порта 80 до веб-сервера (правила iptables - файл [iptables_rules_inetRouter2.ipv4](./vagrant30_2/ansible/templates/iptables_rules_inetRouter2.ipv4))
 - на всех серверах доступ в интернет остаётся через inetRouter
