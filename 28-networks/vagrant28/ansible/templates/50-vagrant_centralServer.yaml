@@ -3,7 +3,7 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-    enp0s8:
+    ens6:
       addresses:
       - 192.168.0.2/28
       routes:
@@ -22,6 +22,6 @@ network:
       - to: default
         via: 192.168.0.1
 
-    enp0s9:
+    ens7:
       addresses:
       - 192.168.50.12/24

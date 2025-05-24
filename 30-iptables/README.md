@@ -56,7 +56,7 @@
 > _Задание выполнено с использованием:_
 > - Vagrant 2.4.5
 > - Virtualbox 7.1.8 r168469
-> - vagrant box: ubuntu/jammy64 20241002.0.0
+> - vagrant box: bento/ubuntu-22.04
 > - Ansible [core 2.18.5]
 
 #### 1. knocking port
@@ -113,7 +113,54 @@ COMMIT
 COMMIT
 # Completed on Wed May 21 16:00:21 2025
 ```
+2. FORWARD
+- на сервере centralServer запущен nginx
+- на inetRouter2 настроен проброс порта 80 до веб-сервера (правила iptables - файл [iptables_rules_inetRouter2.ipv4](./vagrant30_2/ansible/templates/iptables_rules_inetRouter2.ipv4))
+- на всех серверах доступ в интернет остаётся через inetRouter
 
+```bash 
+ # проверка доступности сервера nginx c хостовой машины
+  ╭─alex@smith in repo: otuslinuxprof/30-iptables/vagrant30 on  main [!?] via ⍱ v2.4.5 took 2m12s
+[🔴] × curl 192.168.0.3:8080
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+```bash
+# просмотр обращений к серверу по результатам conntrack
+vagrant@inetRouter2:~$ sudo conntrack -E
+    [NEW] tcp      6 120 SYN_SENT src=192.168.0.1 dst=192.168.0.3 sport=47442 dport=8080 [UNREPLIED] src=192.168.0.2 dst=192.168.0.3 sport=80 dport=47442
+ [UPDATE] tcp      6 60 SYN_RECV src=192.168.0.1 dst=192.168.0.3 sport=47442 dport=8080 src=192.168.0.2 dst=192.168.0.3 sport=80 dport=47442
+ [UPDATE] tcp      6 432000 ESTABLISHED src=192.168.0.1 dst=192.168.0.3 sport=47442 dport=8080 src=192.168.0.2 dst=192.168.0.3 sport=80 dport=47442 [ASSURED]
+ [UPDATE] tcp      6 120 FIN_WAIT src=192.168.0.1 dst=192.168.0.3 sport=47442 dport=8080 src=192.168.0.2 dst=192.168.0.3 sport=80 dport=47442 [ASSURED]
+ [UPDATE] tcp      6 30 LAST_ACK src=192.168.0.1 dst=192.168.0.3 sport=47442 dport=8080 src=192.168.0.2 dst=192.168.0.3 sport=80 dport=47442 [ASSURED]
+ [UPDATE] tcp      6 120 TIME_WAIT src=192.168.0.1 dst=192.168.0.3 sport=47442 dport=8080 src=192.168.0.2 dst=192.168.0.3 sport=80 dport=47442 [ASSURED]
+
+
+```
 
 ### Links:
 

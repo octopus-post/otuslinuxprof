@@ -1,0 +1,66 @@
+---
+- name: NetworkLab
+#  gather_facts: false
+  hosts: all
+  become: true
+  tasks:
+  - name: Set down ufw on inetRouter
+    ansible.builtin.systemd_service:
+      name: ufw
+      state: stopped
+      enabled: false
+    when: (ansible_hostname == "inetRouter")
+
+  - name: Set up NAT on inetRouter
+    ansible.builtin.template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      owner: root
+      group: root
+      mode: "{{ item.mode }}"
+    with_items:
+      - { src: "iptables_rules.ipv4", dest: "/etc/iptables_rules.ipv4", mode: "0644" }
+      - { src: "iptables_restore", dest: "/etc/network/if-pre-up.d/iptables", mode: "0755" }
+    when: (ansible_hostname == "inetRouter")
+
+  - name: Set up forward packages across routers
+    ansible.builtin.sysctl:
+      name: net.ipv4.conf.all.forwarding
+      value: '1'
+      state: present
+    when: "'routers' in group_names"
+
+  - name: Disable default route
+    ansible.builtin.template:
+      src: 00-installer-config.yaml
+      dest: /etc/netplan/00-installer-config.yaml
+      owner: root
+      group: root
+      mode: "0600"
+    when: (ansible_hostname != "inetRouter")
+
+  - name: Add default gateway for Routers
+    ansible.builtin.template:
+      src: "50-vagrant_{{ansible_hostname}}.yaml"
+      dest: /etc/netplan/50-vagrant.yaml
+      owner: root
+      group: root
+      mode: "0600"
+
+  - name: Apply netplan config
+    ansible.builtin.command: netplan apply
+    become: true
+    ignore_errors: true
+
+  - name: Install traceroute
+    ansible.builtin.package:
+      name: traceroute
+      state: present
+      update_cache: true
+
+
+  - name: Restart all hosts
+    reboot:
+      reboot_timeout: 600
+
+...

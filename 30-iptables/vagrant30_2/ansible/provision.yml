@@ -9,7 +9,7 @@
       name: ufw
       state: stopped
       enabled: false
-    when: (ansible_hostname == "inetRouter")
+ #   when: (ansible_hostname == "inetRouter")
 
   - name: Install some packages on the inetRouter
     ansible.builtin.package:
@@ -20,6 +20,20 @@
       state: present
       update_cache: true
     when: (ansible_hostname == "inetRouter")
+
+  - name: Install traceroute
+    ansible.builtin.package:
+      name: traceroute
+      state: present
+      update_cache: true
+#    when: "'routers' in group_names"
+
+  - name: Install nginx
+    ansible.builtin.package:
+      name: nginx
+      state: present
+      update_cache: true
+    when: (ansible_hostname == "centralServer")
 
   - name: Writes the /etc/default/knockd
     ansible.builtin.template:
@@ -48,6 +62,18 @@
       - { src: "iptables_rules.ipv4", dest: "/etc/iptables_rules.ipv4", mode: "0640" }
       - { src: "iptables_restore", dest: "/etc/network/if-pre-up.d/iptables", mode: "0755" }
     when: (ansible_hostname == "inetRouter")
+
+  - name: Set up NAT on inetRouter2
+    ansible.builtin.template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      owner: root
+      group: root
+      mode: "{{ item.mode }}"
+    with_items:
+      - { src: "iptables_rules_inetRouter2.ipv4", dest: "/etc/iptables_rules.ipv4", mode: "0640" }
+      - { src: "iptables_restore", dest: "/etc/network/if-pre-up.d/iptables", mode: "0755" }
+    when: (ansible_hostname == "inetRouter2")
 
 # This will load a state from a file, with a rollback in case of access loss
   - name: Restore firewall state from a file
@@ -87,11 +113,6 @@
     become: true
     ignore_errors: true
 
-  - name: Install traceroute
-    ansible.builtin.package:
-      name: traceroute
-      state: present
-      update_cache: true
 
   handlers:
     - name: Start knockd
