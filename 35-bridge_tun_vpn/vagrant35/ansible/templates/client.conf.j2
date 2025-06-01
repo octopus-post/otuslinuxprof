@@ -1,0 +1,16 @@
+dev tun 
+proto udp 
+remote 192.168.56.10 1207 
+client 
+resolv-retry infinite 
+remote-cert-tls server 
+ca /etc/openvpn/ca.crt 
+cert /etc/openvpn/client.crt 
+key /etc/openvpn/client.key 
+route 10.10.10.0 255.255.255.0 
+persist-key 
+persist-tun 
+#comp-lzo 
+#cipher AES-256-GCM
+allow-compression no
+verb 3 

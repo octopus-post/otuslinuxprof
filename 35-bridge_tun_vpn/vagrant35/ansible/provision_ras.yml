@@ -1,0 +1,104 @@
+---
+- name: OVPN RAS
+  hosts: otus_server
+  become: true
+  vars_files:
+    - defaults/main.yml
+  tasks:
+  - name: Install base tools
+    ansible.builtin.apt:
+      name:
+        - openvpn
+        - easy-rsa
+#        - selinux-utils
+      state: present
+      update_cache: true
+
+  # - name: Disable SELinux
+  #   ansible.posix.selinux:
+  #     state: disabled
+  - name: Disable ufw service
+    ansible.builtin.service:
+      name: ufw
+      state: stopped
+      enabled: false
+
+  - name: Set up forward packages across routers
+    ansible.posix.sysctl:
+      name: net.ipv4.conf.all.forwarding
+      value: '1'
+      state: present
+  - name: Set up forward without reboot
+    ansible.builtin.shell: >
+      echo 1 > /proc/sys/net/ipv4/ip_forward;
+
+  - name: Remove pki folder
+    ansible.builtin.file:
+      path: /etc/openvpn/pki
+      state: absent
+
+  - name: Init PKI
+    ansible.builtin.shell: >
+      echo 'yes' | /usr/share/easy-rsa/easyrsa init-pki;
+    args:
+      chdir: "/etc/openvpn/"
+      executable: /bin/bash
+
+  - name: Generate server's keys
+    ansible.builtin.shell: >
+      echo 'rasvpn' | /usr/share/easy-rsa/easyrsa build-ca nopass;
+      /usr/share/easy-rsa/easyrsa gen-dh;
+      echo 'rasvpn' | /usr/share/easy-rsa/easyrsa gen-req server nopass;
+      echo 'yes' | /usr/share/easy-rsa/easyrsa sign-req server server;
+    args:
+      chdir: "/etc/openvpn/"
+      executable: /bin/bash
+#      openvpn --genkey secret ca.key;
+  - name: Generate client's keys
+    ansible.builtin.shell: >
+      echo 'client' | /usr/share/easy-rsa/easyrsa gen-req client nopass;
+      echo 'yes' | /usr/share/easy-rsa/easyrsa sign-req client client;
+    args:
+      chdir: "/etc/openvpn/"
+      executable: /bin/bash
+
+  - name: Set client static ip and iroute
+    ansible.builtin.shell: >
+      echo -e 'ifconfig-push 10.10.10.101 255.255.255.0\niroute 10.10.10.0 255.255.255.0' > /etc/openvpn/client/client;
+    args:
+      executable: /bin/bash
+
+  - name: Create server.conf
+    ansible.builtin.template:
+      src: server.conf.ras.j2
+      dest: /etc/openvpn/server.conf
+      owner: root
+      group: root
+      mode: "0644"
+
+  - name: Create service unit openvpn
+    ansible.builtin.template:
+      src: openvpn.service.j2
+      dest: /etc/systemd/system/openvpn@.service
+      owner: root
+      group: root
+      mode: "0640"
+
+  - name: Start openvpn
+    ansible.builtin.systemd_service:
+      name: openvpn@server
+      state: started
+      daemon_reload: true
+      enabled: true
+
+  - name: Copy key files to hosts
+    ansible.builtin.fetch:
+      src: "/etc/openvpn/pki/{{ item }}"
+      dest: pki/{{ item }}
+      flat: true
+    loop:
+      - ca.crt
+      - issued/client.crt
+      - private/client.key
+
+...
