@@ -93,7 +93,7 @@
  - _на сервере ns02 для успешного получения реплики зон с мастера в конфиге в параметре directory указан каталог /var/cache/bind_
 
 #### 2. Настройка Split-DNS 
-Результат настройки стенда split-dns [commandset.md](./appendix/commandset.md#2-настройка-split-dns)
+Результат настройки стенда split-dns [commandset.md#2-настройка-split-dns](./appendix/commandset.md#2-настройка-split-dns)
 
   - _NB! На сервере ns01 не проходит проверку конфиг /named.conf.options до тех пор, пока в последнем view есть зона newdns.lab. Причина не понятна, пока зона закомментирована в конфиге /etc/bind/named.conf.options_
 ```bash
