@@ -1,5 +1,5 @@
-# Less31. Фильтрация трафика - firewalld
-- [Less31. Фильтрация трафика - firewalld](#less31-фильтрация-трафика---firewalld)
+# Less34. BGP
+- [Less34. BGP](#less34-bgp)
     - [Цель:](#цель)
     - [Содержание:](#содержание)
     - [Результаты:](#результаты)
@@ -11,23 +11,22 @@
     - [Links:](#links)
 
 ### Цель: 
-- работата с утилитой и сервисом firewalld;
-- настраивать шлюз средствами iptables;
+- познакомимся с протоколом динамической маршрутизации BGP.
   
 ### Содержание:
-- архитектура firewalld;
-- настройка через firewalld-cmd;
-- настройка пересылки пакетов;
-- настройка шлюза в iptables;
+- назначение протокола BGP;
+- автономные системы и как они используются для маршрутизации;
+- основные приемы управления трафиком с помощью BGP;
+- основные моменты настройки BGP на примере программных маршрутизаторов BIRD и FRR.
  
 ### Результаты:
-- настраивать системы с активным firewalld
-- понимать процессы NAT и настраивать шлюз
+- больше узнать про протокол BGP, особенности его работы и настройки на программных маршрутизаторах.
+  
 ### Компетенции
 
 Работа с сетевой подсистемой
-- обеспечивать сетевую безопасность
-- 
+- работать с протоколом BGP
+  
 ### Задание:
 
 
@@ -37,13 +36,9 @@
 ### Критерии оценки:
 
 ### Комментарии к выполнению задания:
-[commandset.md](./appendix/commandset.md)
+
 
 ### Links:
 
-- [https://en.wikipedia.org/wiki/Netfilter](https://en.wikipedia.org/wiki/Netfilter)
-
-- [https://firewalld.org/documentation/](https://firewalld.org/documentation/)
-- [https://en.wikipedia.org/wiki/Netfilter](https://en.wikipedia.org/wiki/Netfilter)
-- [https://ixnfo.com/en/ubuntu-ip-masquerading.html](https://ixnfo.com/en/ubuntu-ip-masquerading.html)
-- 
+- [https://datatracker.ietf.org/doc/html/rfc1918](https://datatracker.ietf.org/doc/html/rfc1918)
+- [https://www.icann.org/en/system/files/files/octo-014-02sep20-en.pdf](https://www.icann.org/en/system/files/files/octo-014-02sep20-en.pdf)
