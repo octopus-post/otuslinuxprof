@@ -1,0 +1,105 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# 
+ENV['VAGRANT_DEFAULT_PROVIDER'] = "virtualbox"
+$global_box_name="ubuntu/jammy64" #"generic/centos7" # "centos/7" # "rockylinux/8" #
+
+MACHINES = {
+  :ns01 => {
+        :box_name => $global_box_name,
+        :vm_name => "ns01",
+        :net => [
+                   ['192.168.56.10',  5, "255.255.255.0", "dns"],
+                ]
+  },
+  :ns02 => {
+        :box_name => $global_box_name,
+        :vm_name => "ns02",
+        :net => [
+                   ['192.168.56.11',  5, "255.255.255.0", "dns"],
+                ]
+  },
+  :client => {
+        :box_name => $global_box_name,
+        :vm_name => "client",
+        :net => [
+                  ['192.168.56.15',  5, "255.255.255.0", "dns"],
+                ]
+  },
+  :client2 => {
+        :box_name => $global_box_name,
+        :vm_name => "client2",
+        :net => [
+                  ['192.168.56.16',  5, "255.255.255.0", "dns"],
+                ]
+  },  
+}
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |v|
+	  v.memory = 1024
+  end
+  MACHINES.each do |boxname, boxconfig|
+    config.vm.define boxname do |box|
+      box.vm.box = boxconfig[:box_name]
+      box.vm.hostname = boxconfig[:vm_name]
+      boxconfig[:net].each do |ipconf|
+        box.vm.network("private_network" \
+                    , ip: ipconf[0] \
+                    , virtualbox__netmask: ipconf[2] \
+                    #, virtualbox__intnet: ipconf[3] \
+                    )        
+      end
+      if boxconfig[:vm_name] == "client2"
+        box.vm.provision "ansible" do |ansible|
+#          ansible.verbose = "vvv"
+          ansible.playbook = "ansible/playbook.yml"
+          ansible.inventory_path = "ansible/hosts"
+#          ansible.host_key_checking = "false"
+          ansible.limit = "all"
+        end
+      end    
+    end
+  end
+end
+# ----------------------------
+
+# Vagrant.configure(2) do |config|
+#   config.vm.box = $global_box_name
+
+# # #  if config.vm.hostname == "client2"
+# #     config.vm.provision "ansible" do |ansible|
+# #       ansible.verbose = "vvv"
+# #       ansible.playbook = "ansible/playbook.yml"
+# #       ansible.inventory_path = "ansible/hosts"
+# #       ansible.host_key_checking = "false"
+# #       ansible.limit = "all"      
+# # #      ansible.become = "true"
+# #     end
+# # #  end
+
+#   config.vm.provider "virtualbox" do |v|
+# 	  v.memory = 256
+#   end
+
+#   config.vm.define "ns01" do |ns01|
+#     ns01.vm.network "private_network", ip: "192.168.56.10", virtualbox__network_name: "255.255.255.0", virtualbox__intnet: "dns"
+#     ns01.vm.hostname = "ns01"
+#   end
+
+#   # config.vm.define "ns02" do |ns02|
+#   #   ns02.vm.network "private_network", ip: "192.168.56.11", virtualbox__network_name: "255.255.255.0", virtualbox__intnet: "dns"
+#   #   ns02.vm.hostname = "ns02"
+#   # end
+
+#   # config.vm.define "client" do |client|
+#   #   client.vm.network "private_network", ip: "192.168.56.15", virtualbox__network_name: "255.255.255.0", virtualbox__intnet: "dns"
+#   #   client.vm.hostname = "client"
+#   # end
+
+#   # config.vm.define "client2" do |client2|
+#   #   client2.vm.network "private_network", ip: "192.168.56.16", virtualbox__network_name: "255.255.255.0", virtualbox__intnet: "dns"
+#   #   client2.vm.hostname = "client2"
+#   # end
+
+# end

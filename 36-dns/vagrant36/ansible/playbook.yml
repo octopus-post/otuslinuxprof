@@ -1,0 +1,123 @@
+---
+- name: BIND
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Install packages bind, bind-utils
+      ansible.builtin.apt:
+        name:
+          - bind9
+          - bind9utils
+          - ntp
+        state: present
+        update_cache: true
+    - name: Start and enable ntpd
+      ansible.builtin.service:
+        name: ntp
+        state: started
+        enabled: true
+    - name: Copy transferkey to all servers and the client
+      ansible.builtin.copy:
+        src: provisioning/named.zonetransfer.key
+        dest: /etc/bind/named.zonetransfer.key
+        owner: root
+        group: bind
+        mode: "0644"
+
+- name: Setup ns01
+  hosts: ns01
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Copy named.conf
+      ansible.builtin.copy:
+        src: provisioning/master-named.conf
+        dest: /etc/bind/named.conf.options
+        owner: root
+        group: bind
+        mode: "0644"
+    - name: Copy zones
+      ansible.builtin.copy:
+        src: provisioning/{{ item }}
+        dest: /etc/bind/
+        owner: root
+        group: bind
+        mode: "0664"
+      with_items:
+      - named.ddns.lab
+      - named.dns.lab
+      - named.dns.lab.client
+      - named.dns.lab.rev
+      - named.newdns.lab
+    - name: Copy resolv.conf to the servers
+      ansible.builtin.template:
+        src: provisioning/servers-resolv.conf.j2
+        dest: /etc/resolv.conf
+        owner: root
+        group: root
+        mode: "0644"
+
+#     # - name: Set /etc/named permissions
+#     #   ansible.builtin.file: path=/etc/named owner=root group=named mode=0670
+
+    - name: Ensure bind is running and enabled
+      ansible.builtin.service:
+        name: bind9
+        state: restarted
+        enabled: true
+
+- name: Set up ns02
+  hosts: ns02
+  become: true
+  tasks:
+    - name: Copy named.conf
+      ansible.builtin.copy:
+        src: provisioning/slave-named.conf
+        dest: /etc/bind/named.conf.options
+        owner: root
+        group: bind
+        mode: "0640"
+    - name: Copy resolv.conf to the servers
+      ansible.builtin.copy:
+        src: provisioning/servers-resolv.conf.j2
+        dest: /etc/resolv.conf
+        owner: root
+        group: root
+        mode: "0644"
+    # - name: Set /etc/named permissions
+    #   ansible.builtin.file: path=/etc/named owner=root group=named mode=0670
+    - name: Ensure named is running and enabled
+      ansible.builtin.service:
+        name: named
+        state: restarted
+        enabled: true
+
+- name: Set up client,client2
+  hosts: client,client2
+  become: true
+  tasks:
+    - name: Copy resolv.conf to the client
+      ansible.builtin.copy:
+        src: provisioning/client-resolv.conf
+        dest: /etc/resolv.conf
+        owner: root
+        group: root
+        mode: "0640"
+    - name: Copy rndc conf file
+      ansible.builtin.copy:
+        src: provisioning/rndc.conf
+        dest: /home/vagrant/rndc.conf
+        owner: vagrant
+        group: vagrant
+        mode: "0640"
+    - name: Copy motd to the client
+      ansible.builtin.copy:
+        src: provisioning/client-motd
+        dest: /etc/motd
+        owner: root
+        group: root
+        mode: "0640"
+
+...
