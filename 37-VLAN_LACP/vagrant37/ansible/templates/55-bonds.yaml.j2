@@ -1,0 +1,22 @@
+network:
+    version: 2
+    renderer: networkd
+    ethernets:
+        enp0s8:
+            {}
+#            dhcp4: false
+        enp0s9:
+            {}
+#            dhcp4: false
+    bonds:
+        bond0:
+            dhcp4: false
+            interfaces:
+                - enp0s8
+                - enp0s9
+            parameters:
+                mode: active-backup
+                primary: enp0s8
+                mii-monitor-interval: 100
+            addresses:
+                - {{ bond_ip }}/30

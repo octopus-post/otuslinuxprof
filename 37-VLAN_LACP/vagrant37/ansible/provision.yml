@@ -1,0 +1,77 @@
+- name: Base set up
+  hosts: all
+  become: true
+  tasks:
+  # Установка приложений на RedHat-based системах
+  - name: Install software on CentOS
+    ansible.builtin.dnf:
+      name:
+#        - vim
+        - traceroute
+        - tcpdump
+        - net-tools
+      state: present
+      update_cache: true
+    when: (ansible_os_family == "RedHat")
+
+  # Установка приложений на Debian-based системах
+  - name: Install software on Debian-based
+    ansible.builtin.apt:
+      name:
+#        - vim
+        - traceroute
+        - tcpdump
+        - net-tools
+      state: present
+      update_cache: true
+    when: (ansible_os_family == "Debian")
+
+
+- name: Set up network on vlan1 hosts
+  hosts: testClient1,testServer1,testClient2,testServer2
+  become: true
+  gather_facts: false
+  tasks:
+
+  - name: Copy network config
+    ansible.builtin.template:
+      src: templates/50-cloud-init.yaml.j2
+      dest: /etc/netplan/50-cloud-init.yaml
+      owner: root
+      group: root
+      mode: "0644"
+    notify: network restart
+
+#- handlers:
+  - name : network restart
+    ansible.builtin.shell: 'sudo netplan apply'
+    become: true
+    async: 45
+    poll: 0
+    ignore_errors: true
+
+
+- name: Set up bond network on Routers
+  hosts: inetRouter,centralRouter
+  become: true
+  gather_facts: false
+  tasks:
+
+  - name: Build bond0
+    ansible.builtin.template:
+      src: templates/55-bonds.yaml.j2
+      dest: /etc/netplan/55-bonds.yaml
+      owner: root
+      group: root
+      mode: "0644"
+    notify:
+      - network restart
+
+#  handlers:
+  - name : network restart
+    ansible.builtin.shell: 'sudo netplan apply'
+    become: true
+    async: 45
+    poll: 0
+    ignore_errors: true
+...
