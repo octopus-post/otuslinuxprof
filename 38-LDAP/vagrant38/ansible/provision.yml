@@ -1,0 +1,74 @@
+---
+- name: Base pre-setup
+  hosts: clients
+  become: true
+  gather_facts: false
+  tasks:
+
+  # Установка текстового редактора Vim и chrony
+  # Уже присутствуют в системе
+#   - name: install softs on CentOS
+#     ansible.builtin.dnf:
+#       name:
+#         - vim
+#         - chrony
+#       state: present
+#       update_cache: true
+
+  # Установка python версии >3.6 для совместимости с ansible [core 2.18.5]
+  - name: install python3.12
+    ansible.builtin.raw: dnf install -y python3.12
+
+- name: base set up
+  hosts: clients
+  become: true
+  gather_facts: true
+  tasks:
+
+  - name: disable firewalld
+    ansible.builtin.service:
+      name: firewalld
+      state: stopped
+      enabled: false
+
+  # Отключение SElinux из автозагрузки
+  # Будет применено после перезагрузки
+  # - name: disable SElinux
+  #   ansible.posix.selinux:
+  #     state: disabled
+
+  # Отключение SElinux до перезагрузки
+  - name: disable SElinux now
+    ansible.builtin.shell: setenforce 0
+
+  # Установка временной зоны
+  - name: Set up timezone
+    ansible.builtin.timezone:
+      name: "Asia/Novosibirsk"
+
+  - name: enable chrony
+    ansible.builtin.service:
+      name: chronyd
+      state: restarted
+      enabled: true
+
+  - name: change /etc/hosts
+    ansible.builtin.template:
+      src: templates/hosts.j2
+      dest: /etc/hosts
+      owner: root
+      group: root
+      mode: "0644"
+
+  # Установка клиента Freeipa с помощью модуля raw, так как в python3.12 не хватает модуля Python3.12-DNF
+  - name: install module ipa-client
+    ansible.builtin.raw: dnf install freeipa-client -y
+#     ansible.builtin.dnf:
+#       name: freeipa-client
+#       name: mc
+#       state: present
+#       update_cache: true
+
+  - name: add host to ipa-server
+    ansible.builtin.shell: echo -e "yes\nyes" | ipa-client-install --mkhomedir --domain=OTUS.LAN --server=ipa.otus.lan --no-ntp -p admin -w 12345678
+...
