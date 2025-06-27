@@ -59,7 +59,8 @@
 4. файл инвентаризаци [hosts](./vagrant33/ansible/hosts)
 5. переменные [./ansible/defaults/main.yml](./vagrant33/ansible/defaults/main.yml)
 6. каталог шаблонов [./ansible/templates/](./vagrant33/ansible/templates/)
-7. листинг команд и вывод результатов [commandset.md](./appendix/commandset.md)
+7. файлы конфигураций daemons и frr [./files/](./files/)
+8. листинг команд и вывод результатов [commandset.md](./appendix/commandset.md)
 
 
 
