@@ -45,7 +45,7 @@
 | 41. Nginx                                               |                                                             |
 | 42. Динамический веб                                    | [42-web2](./42-web2/)                                       |
 | 43. MySQL                                               |                                                             |
-| 44. MySQL: Backup + Репликация                          |                                                             |
+| 44. MySQL: Backup + Репликация                          | [44-mysql_backup](./44-MySQL_Backup/)                       |
 | 45. PostgreSQL                                          |                                                             |
 | 46. Postgres: Backup + Репликация                       |                                                             |
 | 47. Почта: SMTP, IMAP, POP3                             |                                                             |
