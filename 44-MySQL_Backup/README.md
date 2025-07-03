@@ -67,6 +67,7 @@
 - ansible-playbook [./vagrant-mysql-repl/provision/](./vagrant-mysql-repl/provision/)
 - файлы конфигураций mysql-серверов SOURCE (mysql1) и REPLICA (mysql2) [./files/](./files/)
 - файлы бэкапов [./files/mysql_dump/](./files/mysql_dump/)
+- вывод команд и проверка результатов [./appendix/typescript01.md](./appendix/typescript01.md)
 
 Материалы занятия:
 [commandset.md](./appendix/commandset.md)
