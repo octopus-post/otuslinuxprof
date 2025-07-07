@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT-0
+---
+# defaults file for postgres_replicationz
+replicator_password: 'Otus2022!'
+master_ip: '192.168.57.11'
+slave_ip: '192.168.57.12'
+barman_ip: '192.168.57.13'
