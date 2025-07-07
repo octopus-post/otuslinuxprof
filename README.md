@@ -47,5 +47,5 @@
 | 43. MySQL                                               |                                                             |
 | 44. MySQL: Backup + Репликация                          | [44-mysql_backup](./44-MySQL_Backup/)                       |
 | 45. PostgreSQL                                          |                                                             |
-| 46. Postgres: Backup + Репликация                       |                                                             |
+| 46. Postgres: Backup + Репликация                       | [46-Postgres2/](./46-Postgres2/)                            |
 | 47. Почта: SMTP, IMAP, POP3                             |                                                             |
