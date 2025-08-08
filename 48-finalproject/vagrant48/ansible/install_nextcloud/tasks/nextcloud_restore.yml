@@ -1,8 +1,5 @@
 ---
-# preinstall
-# - include_tasks: preinstall.yml
-# # Setup nextcloud
-# - import_tasks: nextcloud_setup.yml
+
 - name: Check nextcloud dir existence on remote host
   ansible.builtin.stat:
     path: "{{ nextcloud_data_dir }}"
@@ -24,7 +21,6 @@
 - name: Restore Nextcloud data directory and config
   ansible.builtin.copy:
     src: "{{ nextcloud_backup_dir }}/nextcloud/"
-#      - "/var/www/nextcloud/config/config.php"
     dest: "{{ nextcloud_data_dir }}"
     owner: www-data
     group: www-data

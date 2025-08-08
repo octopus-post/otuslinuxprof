@@ -27,18 +27,16 @@
 - name: Setup MySQL-SOURCE
   hosts: servicenode
   become: true
-  # vars:
-  #   mysqlserver_id: "1"
   vars_files:
     - ./vars/variables.yml
   roles:
     - setup_mysqlsource
 
-- name: Restore nextcloud dir and DB
+- name: Setup nextcloud
   hosts: servicenode
   become: true
   vars:
-    nextcloud_can_init: False
+    nextcloud_can_init: false
   vars_files:
     - ./vars/variables.yml
   roles:
@@ -48,7 +46,7 @@
   hosts: servicenode
   become: true
   vars:
-    dumpfile_name: 'mysqldump_nextcloud_2025-08-02.sql'
+    dumpfile_name: 'mysqldump_nextcloud_2025-08-05.sql'
   vars_files:
     - ./vars/variables.yml
   tasks:

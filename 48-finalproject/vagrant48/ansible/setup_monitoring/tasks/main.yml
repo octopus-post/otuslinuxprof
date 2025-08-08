@@ -19,6 +19,12 @@
   include_tasks: install_alertmanager.yml
   tags: Alert_manager
 
+- name: Copy elk cert
+  vars:
+    webserver: elk
+  include_tasks: copy_certs.yml
+  tags: ssl
+
 - name: Install nginx
   include_tasks: install_nginx.yml
   tags: nginx

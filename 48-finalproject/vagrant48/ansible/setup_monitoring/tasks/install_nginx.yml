@@ -39,11 +39,11 @@
     owner: root
     group: root
     mode: "0755"
-# - name: Create simlink
-#   ansible.builtin.file:
-#     path: /etc/nginx/sites-enabled/elastic
-#     src: /etc/nginx/sites-available/elastic.conf
-#     state: link
+- name: Create simlink
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/elastic
+    src: /etc/nginx/sites-available/elastic.conf
+    state: link
 
 - name: Start nginx
   ansible.builtin.systemd:

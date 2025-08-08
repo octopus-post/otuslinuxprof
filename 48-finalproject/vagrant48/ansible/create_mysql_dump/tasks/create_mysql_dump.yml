@@ -1,10 +1,9 @@
 ---
-
 - name: Run RESET MASTER command which will delete all existing binary log files and reset the binary log index file on the primary
+  become: true
   community.mysql.mysql_replication:
     mode: resetprimary
     login_unix_socket: /var/run/mysqld/mysqld.sock
-#  when: (ansible_hostname == 'mysqlrepl')
 
 - name: Dump multiple databases
   become: true
@@ -15,4 +14,3 @@
     master_data: 2
  #    primary_auto_position: false
     login_unix_socket: /var/run/mysqld/mysqld.sock
- #  when: (ansible_hostname == 'nextcloud')

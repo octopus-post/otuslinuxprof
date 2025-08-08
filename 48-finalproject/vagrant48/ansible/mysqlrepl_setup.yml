@@ -1,4 +1,5 @@
 ---
+
 - name: MYSQL-server
   hosts: mysqlrepl
   become: true
@@ -8,8 +9,10 @@
     - install_mysql
 
 - name: Create NEXTCLOUD MySQL-DUMP
-  hosts: "{{ source_hostname }}" #servicenode
-  become: true
+  hosts: "{{ mysql_source_hostname }}"
+#  become: true
+  vars:
+    ansible_host_key_checking: false
   vars_files:
     - ./vars/variables.yml
   roles:
@@ -18,9 +21,17 @@
 - name: Setup MySQL-REPLICA
   hosts: mysqlrepl
   vars:
-    source_hostname: "{{ source_hostname }}" #'servicenode'
+    source_hostname: "{{ mysql_source_hostname }}"
   become: true
   vars_files:
     - ./vars/variables.yml
   roles:
     - setup_replica
+
+- name: Install node_exporter
+  hosts: mysqlrepl
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_node_exporter

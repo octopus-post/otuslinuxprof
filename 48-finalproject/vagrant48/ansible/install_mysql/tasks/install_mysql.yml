@@ -24,13 +24,3 @@
     host_all: true
     state: absent
     login_unix_socket: /var/run/mysqld/mysqld.sock
-
-# - name: Configure mysql source
-#   ansible.builtin.template:
-#     src: mysqld.cnf.j2
-#     dest: /etc/mysql/mysql.conf.d/mysqld.cnf
-#     owner: root
-#     group: root
-#     mode: '0644'
-#     backup: true
-#   notify: "Restart mysql-server"

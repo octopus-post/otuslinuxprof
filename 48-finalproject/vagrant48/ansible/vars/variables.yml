@@ -1,6 +1,7 @@
 ---
 backup_dir: '/vagrant/backups'
 mysql_source_host_ip: 192.168.57.12
+mysql_source_hostname: 'nextcloud'
 mysql_replica_user: replicator
 mysql_replica_user_password: 'S0mStrongPa$$word'
 ssl_keys_path: /vagrant/backups/ssl

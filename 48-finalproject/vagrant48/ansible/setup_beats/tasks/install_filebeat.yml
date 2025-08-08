@@ -10,19 +10,23 @@
     dest: /etc/filebeat/filebeat.yml
     mode: "0644"
     owner: root
-  when: (ansible_hostname != "nextcloud")
+  when: 
+    - (ansible_hostname != "nextcloud")
+    - (ansible_hostname != "monitor")
 
-- name: Set up filebeat
+- name: Set up filebeat to logstash
   ansible.builtin.template:
     src: filebeat_tologstash.yml.j2
     dest: /etc/filebeat/filebeat.yml
     mode: "0644"
     owner: root
-  when: (ansible_hostname == "nextcloud")
+  when: 
+    (ansible_hostname == "nextcloud") or
+    (ansible_hostname == "monitor")
 
 - name: Start filebeat
   ansible.builtin.systemd:
     name: filebeat
     daemon-reload: true
     enabled: true
-    state: started
+    state: restarted

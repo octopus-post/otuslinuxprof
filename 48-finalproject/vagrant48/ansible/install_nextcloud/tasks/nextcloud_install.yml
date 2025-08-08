@@ -40,20 +40,6 @@
     - "Restart nginx"
     - "Restart php"
 
-# - name: Check nextcloud_data dir existence on remote host
-#   ansible.builtin.stat:
-#     path: "{{ nextcloud_data_dir }}/data"
-#   register: reg_nextcloud_data_dir_info
-
-# - name: Create nextcloud_data_dir
-#   ansible.builtin.file:
-#     path: '{{ nextcloud_data_dir }}/data'
-#     state: directory
-#     owner: www-data
-#     group: www-data
-#     mode: '0775'
-#   when: not reg_nextcloud_data_dir_info.stat.exists
-
 - name: Check NC server status
   ansible.builtin.stat:
     path: /var/www/nextcloud/config/CAN_INSTALL
@@ -75,7 +61,6 @@
         --database-pass='{{ nextcloud_password }}' \
         --admin-user='admin' \
         --admin-pass='{{ nextcloud_password }}'"
-#        --data-dir='/var/www/nextcloud/data' \
   when: reg_nc_status.stat.exists
 
 - name: Check NC server status

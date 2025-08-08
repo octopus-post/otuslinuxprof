@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: MIT-0
 ---
-# tasks file for setup_replica
-# - name: Backup MySQL source
-#   include_tasks: install_nextcloud/tasks/nextcloud_backup.yml
 
 - name: Setup REPLICA
   include_tasks: setup_replica.yml

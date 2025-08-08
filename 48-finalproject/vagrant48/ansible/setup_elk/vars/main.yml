@@ -1,12 +1,12 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
 # vars file for setup_elk
 elasticsearch_config: |
-  network.host: {{ ansible_host }}
+  network.host: {{ hostvars['elk']['ansible_host'] }}
   discovery.seed_hosts: [ "192.168.57.15" ] # Enter your Elasticsearch server's IP address or hostname.
 kibana_config: |
   elasticsearch.hosts: [ "http://192.168.57.15:9200" ] # Enter your Elasticsearch server's IP address or hostname.
-  server.host: "{{ ansible_host }}"
+  server.host: "{{ hostvars['elk']['ansible_host'] }}"
   server.port: 5601
   elasticsearch.ssl.verificationMode: none
   #elastic_user: {{ elastic_user }}
@@ -28,3 +28,8 @@ logstash_config: |
 
 elastic_user: 'elastic'
 elastic_password: 'S0beGe4Ur=ACHfIgkdkB'
+
+elasticsearch_host: 'localhost'
+elasticsearch_port: '9200'
+elasticsearch_repo: '/tmp/backup/elasticsearch'
+elasticsearch_repo_name: 'elk_backus_repo'

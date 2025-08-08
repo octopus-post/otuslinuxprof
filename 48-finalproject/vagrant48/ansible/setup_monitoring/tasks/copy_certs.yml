@@ -1,0 +1,33 @@
+---
+
+- name: Create dir
+  become: true
+  ansible.builtin.file:
+    path: /etc/ssl/{{ ansible_hostname }}
+    state: directory
+    mode: '0755'
+
+- name: Check cert status
+  ansible.builtin.stat:
+    path: "{{ ssl_keys_path }}/crt/{{ webserver }}.loc.crt"
+  register: "reg_cert_status"
+
+- name: Copy SSL certificate file
+  ansible.builtin.copy:
+    src: "{{ ssl_keys_path }}/crt/{{ webserver }}.loc.crt"
+    dest: "/etc/ssl/{{ ansible_hostname }}/{{ webserver }}.loc.crt"
+    mode: '0644'
+    owner: root
+    group: root
+    remote_src: true
+  when: "reg_cert_status.stat.exists"
+
+- name: Copy SSL private key file
+  ansible.builtin.copy:
+    src: "{{ ssl_keys_path }}/private/{{ webserver }}.loc.key"
+    dest: "/etc/ssl/{{ ansible_hostname }}/{{ webserver }}.loc.key"
+    mode: '0644'
+    owner: root
+    group: root
+    remote_src: true
+  when: "reg_cert_status.stat.exists"

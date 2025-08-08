@@ -18,13 +18,3 @@
     mode: '0644'
     backup: true
   notify: "Restart mysql-server"
-
-# - name: Dump multiple databases
-#   community.mysql.mysql_db:
-#     state: dump
-#     name: all
-#     target: /vagrant/backups/mysql/dump_{{ inventory_hostname }}.sql
-#     master_data: 0
-# #    primary_auto_position: false
-#     login_unix_socket: /var/run/mysqld/mysqld.sock
-# #  when: (ansible_hostname == 'nextcloud')

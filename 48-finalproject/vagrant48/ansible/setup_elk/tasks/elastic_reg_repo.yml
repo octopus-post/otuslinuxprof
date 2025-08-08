@@ -1,0 +1,11 @@
+---
+- name: Register Elasticsearch snapshot repository
+  community.elastic.elastic_snapshot_repository:
+    name: "{{ elasticsearch_repo_name }}"
+    state: present
+    type: fs
+    settings:
+      location: "{{ elasticsearch_repo }}" # Path accessible by all master and data nodes
+    host: "{{ elasticsearch_host }}"
+    port: "{{ elasticsearch_port }}"
+    # Add authentication details if required

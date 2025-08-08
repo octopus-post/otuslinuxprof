@@ -2,18 +2,18 @@
 - name: Restore server
   become: true
   vars:
-    restore_hostname: "monitor"
-    restore_host_ip: "{{ hostvars['monitor']['ansible_host'] }}"
+    restore_hostname: "elk"
+    restore_host_ip: "{{ hostvars['elk']['ansible_host'] }}"
   hosts: servicenode
   vars_files:
     - ./vars/variables.yml
   roles:
     - setup_restore_node
 
-- name: Monitoring-server
+- name: Install ELK
   hosts: servicenode
   become: true
   vars_files:
     - ./vars/variables.yml
   roles:
-    - setup_monitoring
+    - setup_elk

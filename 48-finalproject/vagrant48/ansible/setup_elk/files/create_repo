@@ -31,3 +31,17 @@ curl -X PUT "localhost:9200/_snapshot/elk_backup_repo?pretty" -H 'Content-Type: 
 
 curl -XPUT 'http://localhost:9200/_snapshot/elk_backup_repo 		{ "type": "fs", "settings": { "location": "/vagrant/backups/elk/backup" }}'
 curl -XPUT 'http://localhost:9200/_snapshot/elk_backup_repo?pretty=true' -d '{"type":"fs","settings":{"compress":true,"location":"/tmp/backup"}}'
+
+curl -XPUT 'http://localhost:9200/_snapshot/elk_backup_repo?pretty=true' -H 'Content-Type: application/json' -d '{"type":"fs","settings":{"compress":true,"location":"/tmp/backup"}}'
+
+curl -XPUT http://localhost:9200/_snapshot/elk_backup_repo/test_snapshot?wait_forcompletion=false -H 'Content-Type: application/json' -d '{"indices":"new_test"}'
+=======================================
+
+Регистрация репо
+curl -XPUT 'http://localhost:9200/_snapshot/elk_backup_repo?pretty=true' -H 'Content-Type: application/json' -d '{"type":"fs","settings":{"compress":true,"location":"/tmp/backup"}}'
+
+Проверить создание снапшота
+curl -XPUT http://localhost:9200/_snapshot/elk_backup_repo/test_snapshot2 -H 'Content-Type: application/json'
+
+Просмотр всех существующих резервных копий.
+# curl -XGET 'http://localhost:9200/_snapshot/_all?pretty=true'

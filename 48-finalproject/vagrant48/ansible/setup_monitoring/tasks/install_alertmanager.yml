@@ -84,13 +84,6 @@
     group: alertmanager
     mode: '0755'
 
-# - name: Create alertmanager rules
-#   ansible.builtin.template:
-#     src: alertmanager_rules.yml.j2
-#     dest: /etc/prometheus/alertmanager_rules.yml
-#     owner: alertmanager
-#     group: alertmanager
-#     mode: '0700'
 - name: Create alertmanager rules
   ansible.builtin.copy:
     src: templates/alertmanager_rules.yml.j2

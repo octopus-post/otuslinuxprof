@@ -1,0 +1,12 @@
+---
+
+- name: Take Elasticsearch snapshot
+  community.elastic.elastic_snapshot:
+    repository: "{{ elasticsearch_repo_name }}"
+    name: daily_snapshot_{{ ansible_date_time.iso8601 }}
+    state: present
+    indices: ["*"] # Snapshot all indices, or specify a list
+    ignore_unavailable: true
+    include_global_state: true
+    host: "{{ elasticsearch_host }}"
+    port: "{{ elasticsearch_port }}"

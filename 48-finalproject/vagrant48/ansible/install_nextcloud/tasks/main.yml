@@ -15,18 +15,6 @@
   tags: nextcloud install
   when: "{{ nextcloud_can_init }}"
 
-# - include_tasks: nextcloud_backup.yml
-#   tags: start nextcloud backup
-
-# - include_tasks: gen_ssl_certs.yml
-#   tags: SSL
-
-# - include_tasks: setup_ssl_certs | gen_ssl_certs.yml
-#   tags: SSL
-
-# - include_roles: setup_ssl_certs
-#   tags: SSL
-
 - name: Gen ssl certs
   ansible.builtin.import_role:
     name: setup_ssl_certs

@@ -6,7 +6,7 @@ server {
     ssl_certificate_key /etc/ssl/{{ ansible_hostname }}/elk.loc.key;
 
     location / {
-        proxy_pass http://192.168.57.15:5601;
+        proxy_pass http://{{ hostvars['elk']['ansible_host'] }}:5601;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

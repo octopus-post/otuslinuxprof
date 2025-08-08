@@ -4,23 +4,10 @@
   ansible.builtin.shell:
     cmd: "sudo -E -u www-data php {{ nextcloud_data_dir }}/occ maintenance:mode --on"
 
-# - name: Dump mysql databases
-#   community.mysql.mysql_db:
-#     state: dump
-#     name: all
-#     target: "{{ nextcloud_backup_dir }}mysqldump_{{ ansible_date_time.date }}.sql"
-#     master_data: 0
-# #    primary_auto_position: false
-#     login_unix_socket: /var/run/mysqld/mysqld.sock
-
 - name: Create dump
-#  hosts: nextcloud
 #  become: true
   include_tasks:
     file: create_mysql_dump/tasks/create_mysql_dump.yml
-
-
-#   rsync -Aavx nextcloud/ /vagrant/backups/nextcloud/nextcloud_`date +"%Y%m%d"`/
 
 - name: Check NC backup dir status
   ansible.builtin.stat:
@@ -35,7 +22,6 @@
   become: true
   ansible.builtin.copy:
     src: "{{ nextcloud_data_dir }}"
-#      - "/var/www/nextcloud/config/config.php"
     dest: "{{ nextcloud_backup_dir }}"
     owner: www-data
     group: www-data

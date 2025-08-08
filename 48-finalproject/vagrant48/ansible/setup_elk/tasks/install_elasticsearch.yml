@@ -1,27 +1,9 @@
 ---
 
-# - name: Create elastic user
-#   ansible.builtin.user:
-#     name: elastic
-#     create_home: false
-#     shell: /bin/false
-
 - name: Install a elasticsearch-8.9.1-amd64 package
   ansible.builtin.apt:
     deb: "{{ distrib_path }}/elk-8.9-deb/elasticsearch-{{ elk_version }}-amd64.deb"
     state: present
-  # notify:
-  #    - "Start elasticsearch"
-# - name: Config Elasticsearch
-#   vars:
-#     elasticsearch_config: |
-#       network.host: {{ ansible_host }}
-#       xpack.ml.enabled: false
-#   ansible.builtin.blockinfile:
-#     path: /etc/elasticsearch/elasticsearch.yml
-#     block: "{{ elasticsearch_config }}"
-#     marker: "# {mark} Elasticsearch configuration"
-#     backup: true
 
 - name: Set up elasticsearch server
   ansible.builtin.template:
@@ -29,13 +11,6 @@
     dest: /etc/elasticsearch/elasticsearch.yml
     mode: "0644"
     owner: root
-
-# - name: Start elasticsearch
-#   ansible.builtin.systemd:
-#     name: elasticsearch
-#     daemon-reload: true
-#     enabled: true
-#     state: started
 
 - name: Set up jvm
   ansible.builtin.template:
@@ -58,6 +33,7 @@
     name: elasticsearch
     daemon-reload: true
     state: restarted
+    enabled: true
 
 # - name: Reset the password of the elastic built-in superuser with
 #   ansible.builtin.shell:
