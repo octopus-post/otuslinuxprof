@@ -1,0 +1,126 @@
+---
+- name: Create dir
+  become: true
+  ansible.builtin.file:
+    path: /etc/ssl/{{ ansible_hostname }}
+    state: directory
+    mode: '0755'
+
+- name: Check prometheus cert status
+  ansible.builtin.stat:
+    path: "{{ ssl_keys_path }}/crt/prometheus.loc.crt"
+  register: reg_cert_status
+
+- name: Copy prometheus SSL certificate file
+  ansible.builtin.copy:
+    src: "{{ ssl_keys_path }}/crt/prometheus.loc.crt"
+    dest: "/etc/ssl/{{ ansible_hostname }}/prometheus.loc.crt"
+    mode: '0644'
+    owner: root
+    group: root
+    remote_src: true
+  when: reg_cert_status.stat.exists
+
+- name: Copy prometheus SSL private key file
+  ansible.builtin.copy:
+    src: "{{ ssl_keys_path }}/private/prometheus.loc.key"
+    dest: "/etc/ssl/{{ ansible_hostname }}/prometheus.loc.key"
+    mode: '0644'
+    owner: root
+    group: root
+    remote_src: true
+  when: reg_cert_status.stat.exists
+
+- name: Create Prometheus user
+  ansible.builtin.user:
+    name: prometheus
+    create_home: false
+    shell: /bin/false
+
+- name: Create Prometheus dir - /etc/prometheus
+  ansible.builtin.file:
+    path: /etc/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+
+- name: Create Prometheus dir - /var/lib/prometheus
+  ansible.builtin.file:
+    path: /var/lib/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+
+- name: Extract arch prometheus
+  ansible.builtin.unarchive:
+    src: "{{ distrib_path }}/monitor/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+    dest: /tmp/
+    remote_src: true
+  register: reg_path
+
+- name: Path to distr
+  ansible.builtin.debug:
+    msg: "{{ reg_path }}"
+
+
+- name: Copy distr file - promtool
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/promtool"
+    dest: "/usr/local/bin/promtool"
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+    remote_src: true
+
+- name: Copy distr file - prometheus
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
+    dest: "/usr/local/bin/prometheus"
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+    remote_src: true
+
+- name: Copy libs dir - consoles
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/consoles"
+    dest: "/etc/prometheus/"
+    owner: prometheus
+    group: prometheus
+    directory_mode: "0755"
+    remote_src: true
+
+- name: Copy libs dir - console_libraries
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/console_libraries"
+    dest: "/etc/prometheus/"
+    owner: prometheus
+    group: prometheus
+    directory_mode: "0755"
+    remote_src: true
+
+- name: Setup Prometheus conf
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+
+- name: Create Prometheus daemon
+  ansible.builtin.template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+
+- name: Enable prom
+  ansible.builtin.service:
+    name: prometheus
+    enabled: true
+    state: started
+  notify:
+    - "Start Prometheus"

@@ -1,0 +1,26 @@
+---
+- name: MYSQL-server
+  hosts: mysqlrepl
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_mysql
+
+- name: Create NEXTCLOUD MySQL-DUMP
+  hosts: "{{ source_hostname }}" #servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - create_mysql_dump
+
+- name: Setup MySQL-REPLICA
+  hosts: mysqlrepl
+  vars:
+    source_hostname: "{{ source_hostname }}" #'servicenode'
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_replica

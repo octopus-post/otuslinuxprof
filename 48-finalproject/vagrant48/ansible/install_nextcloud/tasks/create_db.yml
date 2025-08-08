@@ -1,0 +1,17 @@
+---
+- name: Create nextcloud database
+  become: true
+  become_user: root
+  community.mysql.mysql_db:
+    name: "{{ nextcloud_db }}"
+    encoding: utf8mb4
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create database user with all database privileges
+  community.mysql.mysql_user:
+    name: "{{ nextcloud_user }}"
+    password: "{{ nextcloud_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock

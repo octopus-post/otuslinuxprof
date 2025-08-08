@@ -1,0 +1,86 @@
+---
+# preinstall
+# - include_tasks: preinstall.yml
+# # Setup nextcloud
+# - import_tasks: nextcloud_setup.yml
+- name: Check nextcloud dir existence on remote host
+  ansible.builtin.stat:
+    path: "{{ nextcloud_data_dir }}"
+  register: reg_dir_info
+
+- name: Print result check
+  ansible.builtin.debug:
+    msg: "Path not exists | reg_dir_info.stat.isdir: {{ (reg_dir_info.stat.isdir | default(False)) }} | reg_dir_info.stat.exists: {{ reg_dir_info.stat.exists }}"
+  when:
+    - not reg_dir_info.stat.isdir | default(False)
+
+- name: Delete nextcloud dir
+  ansible.builtin.file:
+    path: "{{ nextcloud_data_dir }}"
+    state: absent
+  when:
+    - reg_dir_info.stat.isdir | default(False)
+
+- name: Restore Nextcloud data directory and config
+  ansible.builtin.copy:
+    src: "{{ nextcloud_backup_dir }}/nextcloud/"
+#      - "/var/www/nextcloud/config/config.php"
+    dest: "{{ nextcloud_data_dir }}"
+    owner: www-data
+    group: www-data
+    mode: "0755"
+    remote_src: true
+
+# - name: Run RESET MASTER
+#   community.mysql.mysql_replication:
+#     mode: resetprimary
+#     login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Drop a MySQL database
+  community.mysql.mysql_db:
+    name: "{{ nextcloud_db }}"
+    state: absent
+#    login_user: root
+#    login_password: your_mysql_root_password
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create nextcloud database
+#  become: true
+#  become_user: root
+  community.mysql.mysql_db:
+    name: "{{ nextcloud_db }}"
+    encoding: utf8mb4
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Restore Nextcloud database
+  community.mysql.mysql_db:
+    name: all
+    state: import
+    target: "{{ nextcloud_backup_dir }}/{{ dumpfile_name }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Run RESET MASTER
+  community.mysql.mysql_replication:
+    mode: resetprimary
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Restart nginx
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - nginx
+    - mysql
+
+- name: Set maintenance mode off
+  ansible.builtin.shell:
+    cmd: "sudo -E -u www-data php /var/www/nextcloud/occ maintenance:mode --off"
+
+- name: Set maintenance data-fingerprint
+  ansible.builtin.shell:
+    cmd: "sudo -E -u www-data php /var/www/nextcloud/occ maintenance:data-fingerprint"
+- name: Set file:scan
+  ansible.builtin.shell:
+    cmd: "sudo -u www-data php /var/www/nextcloud/occ files:scan --all"
+

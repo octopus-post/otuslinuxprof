@@ -1,0 +1,37 @@
+---
+- name: Restore server
+  become: true
+  vars:
+    restore_hostname: "mysqlrepl"
+    restore_host_ip: "{{ hostvars['mysqlrepl']['ansible_host'] }}"
+  hosts: servicenode
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_restore_node
+
+- name: MYSQL-server
+  hosts: servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_mysql
+
+- name: Create NEXTCLOUD MySQL-DUMP
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - create_mysql_dump
+
+- name: MYSQLREPL-server
+  hosts: servicenode
+  become: true
+  vars:
+    source_hostname: 'nextcloud'
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_replica

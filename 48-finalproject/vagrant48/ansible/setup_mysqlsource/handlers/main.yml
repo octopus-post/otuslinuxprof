@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT-0
+---
+# handlers file for setup_source
+- name: Restart mysql-server
+  ansible.builtin.service:
+    name: mysql
+    state: restarted

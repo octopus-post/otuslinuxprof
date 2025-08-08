@@ -1,0 +1,66 @@
+---
+- name: Start mysql
+  ansible.builtin.systemd:
+    name: mysql
+    state: started
+
+- name: Configure mysql source
+  ansible.builtin.template:
+    src: mysqld.cnf.j2
+    dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  notify: "Restart mysql-server"
+
+- name: Restart mysql
+  ansible.builtin.systemd:
+    name: mysql
+    state: restarted
+
+- name: Stop mysql replica thread
+  community.mysql.mysql_replication:
+    mode: stopreplica
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+#  when: (ansible_hostname == 'mysqlrepl')
+
+
+- name: Run RESET MASTER command which will delete all existing binary log files and reset the binary log index file on the primary
+  community.mysql.mysql_replication:
+    mode: resetprimary
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+#  when: (ansible_hostname == 'mysqlrepl')
+
+
+- name: Restore database
+  community.mysql.mysql_db:
+    name: all
+    state: import
+#    target: /vagrant/backups/nextcloud/mysqldump_{{ ansible_date_time.date }}.sql
+    target: "{{ backup_dir }}/{{ source_hostname }}/mysqldump_{{ source_hostname }}_{{ ansible_date_time.date }}.sql"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+#  when: (ansible_hostname == 'mysqlrepl')
+
+# CHANGE REPLICATION SOURCE TO SOURCE_HOST='192.168.57.12', SOURCE_USER='replicator', SOURCE_PASSWORD='S0mStrongPa$$word', SOURCE_AUTO_POSITION = 1, GET_SOURCE_PUBLIC_KEY = 1;
+
+# - name: Change replication source to replica server
+#   community.mysql.mysql_replication:
+#     mode: changereplication
+#     primary_host: '{{ mysql_source_host_ip }}'
+#     primary_user: '{{ mysql_replica_user }}'
+#     login_password: '{{ mysql_replica_user_password }}'
+#     primary_auto_position: true
+#     login_unix_socket: /var/run/mysqld/mysqld.sock
+#   when: (ansible_hostname == 'mysqlrepl')
+
+- name: Add to Change replication source to replica server
+  command: mysql -e "CHANGE REPLICATION SOURCE TO SOURCE_HOST='{{ mysql_source_host_ip }}', SOURCE_USER='{{ mysql_replica_user }}', SOURCE_PASSWORD='{{ mysql_replica_user_password }}', SOURCE_AUTO_POSITION = 1, GET_SOURCE_PUBLIC_KEY = 1;"
+#  command: mysql -e "CHANGE REPLICATION SOURCE TO SOURCE_HOST='{{ mysql_source_host_ip }}', SOURCE_USER='{{ mysql_replica_user }}', SOURCE_PASSWORD='{{ mysql_replica_user_password }}', GET_SOURCE_PUBLIC_KEY = 1;"  
+#  when: (ansible_hostname == 'mysqlrepl')
+
+- name: Start mysql replica thread
+  community.mysql.mysql_replication:
+    mode: startreplica
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+#  when: (ansible_hostname == 'mysqlrepl')

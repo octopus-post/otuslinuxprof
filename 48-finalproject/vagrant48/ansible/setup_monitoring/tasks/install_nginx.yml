@@ -1,0 +1,52 @@
+---
+- name: Install nginx
+  ansible.builtin.apt:
+    name:
+      - nginx
+    state: present
+    update_cache: true
+
+- name: Config nginx server monitor.loc
+  ansible.builtin.template:
+    src: nginx_monitor.conf.j2
+    dest: /etc/nginx/sites-available/monitor.conf
+    owner: root
+    group: root
+    mode: "0755"
+- name: Create simlink
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/monitor
+    src: /etc/nginx/sites-available/monitor.conf
+    state: link
+
+- name: Config nginx server prometheus.loc
+  ansible.builtin.template:
+    src: nginx_prometheus.conf.j2
+    dest: /etc/nginx/sites-available/prometheus.conf
+    owner: root
+    group: root
+    mode: "0755"
+- name: Create simlink
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/prometheus
+    src: /etc/nginx/sites-available/prometheus.conf
+    state: link
+
+- name: Config nginx server elk.loc
+  ansible.builtin.template:
+    src: nginx_elastic.conf.j2
+    dest: /etc/nginx/sites-available/elastic.conf
+    owner: root
+    group: root
+    mode: "0755"
+# - name: Create simlink
+#   ansible.builtin.file:
+#     path: /etc/nginx/sites-enabled/elastic
+#     src: /etc/nginx/sites-available/elastic.conf
+#     state: link
+
+- name: Start nginx
+  ansible.builtin.systemd:
+    name: nginx
+    daemon_reload: true
+    state: restarted

@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: MIT-0
+---
+# handlers file for setup_replica
+- name: Start mysql-server
+  ansible.builtin.service:
+    name: mysql
+    state: started
+
+- name: Restart mysql-server
+  ansible.builtin.service:
+    name: mysql
+    state: restarted

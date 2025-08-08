@@ -1,0 +1,33 @@
+curl -XPUT "localhost:9200/_snapshot/elk_backup_repo
+{
+  "type": "fs",
+  "settings": {
+    "location": "/vagrant/backups/elk/backup"
+  }
+}"
+
+curl -XPUT "localhost:9200/_snapshot/elk_backup_repo { "type": "fs", "settings": { "location": "/vagrant/backups/elk/backup" }}"
+
+
+PUT _snapshot/my_repo/my_snapshot_2021_06_19_01
+
+curl -XPUT "localhost:9200/_snapshot/elk_backup_repo/snapshot_1"
+curl -XGET "localhost:9200/_snapshot/elk_backup_repo/_all?pretty"
+
+curl -XGET 'http://localhost:9200/_snapshot/_all?pretty=true'
+
+
+
+curl -X PUT "localhost:9200/_snapshot/elk_backup_repo?pretty" -H 'Content-Type: application/json' -d'
+{
+  "type": "fs",
+  "settings": {
+    "location": "/vagrant/backups/elk/backup/",
+    "compress": true
+  }
+}
+'
+
+
+curl -XPUT 'http://localhost:9200/_snapshot/elk_backup_repo 		{ "type": "fs", "settings": { "location": "/vagrant/backups/elk/backup" }}'
+curl -XPUT 'http://localhost:9200/_snapshot/elk_backup_repo?pretty=true' -d '{"type":"fs","settings":{"compress":true,"location":"/tmp/backup"}}'

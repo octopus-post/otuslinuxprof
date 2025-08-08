@@ -1,0 +1,15 @@
+# Закомментарить output.elasticsearch
+##########################################
+# ============================== Filebeat inputs ===============================
+filebeat.inputs:
+- type: filestream
+  paths:
+    - /var/log/nginx/*.log
+
+  enabled: true
+  exclude_files: ['.gz$']
+  prospector.scanner.exclude_files: ['.gz$']
+
+output.logstash:
+  hosts: ["{{ elk_host_ip }}:5400"]
+###########################################

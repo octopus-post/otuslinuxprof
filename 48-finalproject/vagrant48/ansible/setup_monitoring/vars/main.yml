@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT-0
+---
+# vars file for setup_monitoring
+grafana_admin_username: 'Grafana Admin'
+grafana_admin_login: 'admin'
+grafana_admin_password: 'grafana'
+alertmanager_user: 'aerosmith.mail@gmail.com' #octopus.post@yandex.ru
+alertmanager_id: f13d412f28f2979f16c135a00b2f05e6
+alertmanager_password: 'fojqdmqprgkfouir' #ovuezxmgigwueseg
+alertmanager_smarthost: 'smtp.gmail.com:587'

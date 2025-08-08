@@ -1,0 +1,119 @@
+---
+
+- name: Create Alertmanager user
+  ansible.builtin.user:
+    name: alertmanager
+#    create_home: false
+    home: /var/lib/alertmanager
+    shell: /bin/false
+
+- name: Create Alertmanager config dir - /etc/alertmanager
+  ansible.builtin.file:
+    path: /etc/alertmanager
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+
+- name: Create Alertmanager dir - /var/lib/alertmanager
+  ansible.builtin.file:
+    path: /var/lib/alertmanager
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+
+- name: Create Alertmanager storage dir - /var/lib/prometheus/alertmanager
+  ansible.builtin.file:
+    path: /var/lib/prometheus/alertmanager
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+
+- name: Extract arch Alertmanager
+  ansible.builtin.unarchive:
+    src: "{{ distrib_path }}/monitor/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
+    dest: /tmp/
+    remote_src: true
+  register: reg_path
+
+- name: Path to distr
+  ansible.builtin.debug:
+    msg: "{{ reg_path }}"
+
+- name: Copy distr file - amtool
+  ansible.builtin.copy:
+    src: "/tmp/alertmanager-{{ alertmanager_version }}.linux-amd64/amtool"
+    dest: "/usr/local/bin/amtool"
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+    remote_src: true
+
+- name: Copy distr file - alertmanager
+  ansible.builtin.copy:
+    src: "/tmp/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager"
+    dest: "/usr/local/bin/alertmanager"
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+    remote_src: true
+
+- name: Create a EnvironmentFile
+  ansible.builtin.copy:
+    dest: "/etc/default/alertmanager"
+    owner: alertmanager
+    group: alertmanager
+    content: "ALERTMANAGER_OPTS=\"\""
+    mode: '0755'
+
+- name: Setup alertmanager conf
+  ansible.builtin.template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+
+- name: Create alertmanager daemon
+  ansible.builtin.template:
+    src: alertmanager.service.j2
+    dest: /etc/systemd/system/alertmanager.service
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+
+# - name: Create alertmanager rules
+#   ansible.builtin.template:
+#     src: alertmanager_rules.yml.j2
+#     dest: /etc/prometheus/alertmanager_rules.yml
+#     owner: alertmanager
+#     group: alertmanager
+#     mode: '0700'
+- name: Create alertmanager rules
+  ansible.builtin.copy:
+    src: templates/alertmanager_rules.yml.j2
+    dest: /etc/prometheus/alertmanager_rules.yml
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+
+- name: Edit prometheus config - uncomment '# - localhost:9093'
+  ansible.builtin.lineinfile:
+    path: /etc/prometheus/prometheus.yml
+    regexp: '(^\s*)\#(\s*-\s*localhost:9093\s*$)'
+    line: '\1\2'
+    backrefs: true
+    state: present
+
+- name: Edit prometheus config - uncomment '  # - "alertmanager_rules.yml"'
+  ansible.builtin.lineinfile:
+    path: /etc/prometheus/prometheus.yml
+    regexp: (^\s*)\#(\s*-\s*\"alertmanager_rules.yml\"\s*$)
+    line: '\1\2'
+    backrefs: true
+    state: present
+  notify:
+    - "Restart Prometheus"
+    - "Start Alertmanager"

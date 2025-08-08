@@ -1,0 +1,17 @@
+---
+- name: Set a hostname
+  ansible.builtin.hostname:
+    name: "{{ restore_hostname }}"
+
+- name: Add ip address
+  ansible.builtin.template:
+    src: 50-ansible.yaml.j2
+    dest: /etc/netplan/50-ansible.yaml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Netplan apply
+  become: true
+  ansible.builtin.command: netplan apply
+  ignore_errors: true

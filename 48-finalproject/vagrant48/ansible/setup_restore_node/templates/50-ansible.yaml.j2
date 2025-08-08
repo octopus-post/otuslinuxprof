@@ -1,0 +1,8 @@
+---
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth1:
+      addresses:
+      - {{ restore_host_ip}}/24

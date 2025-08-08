@@ -1,0 +1,36 @@
+---
+
+- name: Install MySQL, Python Installs Packages (pip)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - "{{ item }}"
+    state: present
+    update_cache: true
+  with_items:
+    - mysql-server
+    - pip
+  #  - unzip
+
+- name: Make sure pymysql is present
+  become: true # needed if the other tasks are not played as root
+  ansible.builtin.pip:
+    name: pymysql
+    state: present
+
+- name: Removes all anonymous user accounts
+  community.mysql.mysql_user:
+    name: ''
+    host_all: true
+    state: absent
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+# - name: Configure mysql source
+#   ansible.builtin.template:
+#     src: mysqld.cnf.j2
+#     dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+#     owner: root
+#     group: root
+#     mode: '0644'
+#     backup: true
+#   notify: "Restart mysql-server"

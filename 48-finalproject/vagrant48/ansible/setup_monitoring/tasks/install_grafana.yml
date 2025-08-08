@@ -1,0 +1,206 @@
+---
+- name: Create dir
+  become: true
+  ansible.builtin.file:
+    path: /etc/ssl/{{ ansible_hostname }}
+    state: directory
+    mode: '0755'
+  
+- name: Check grafana cert status
+  ansible.builtin.stat:
+    path: "{{ ssl_keys_path }}/crt/{{ ansible_hostname }}.loc.crt"
+  register: reg_cert_status
+
+- name: Copy grafana SSL certificate file
+  ansible.builtin.copy:
+    src: "{{ ssl_keys_path }}/crt/{{ ansible_hostname }}.loc.crt"
+    dest: "/etc/ssl/{{ ansible_hostname }}/{{ ansible_hostname }}.loc.crt"
+    mode: '0644'
+    owner: root
+    group: root
+    remote_src: true
+  when: reg_cert_status.stat.exists
+
+- name: Copy grafana SSL private key file
+  ansible.builtin.copy:
+    src: "{{ ssl_keys_path }}/private/{{ ansible_hostname }}.loc.key"
+    dest: "/etc/ssl/{{ ansible_hostname }}/{{ ansible_hostname }}.loc.key"
+    mode: '0644'
+    owner: root
+    group: root
+    remote_src: true
+  when: reg_cert_status.stat.exists
+
+- name: Install grafana deb package
+  ansible.builtin.apt:
+    deb: "{{ distrib_path }}/monitor/grafana_{{ grafana_version }}_amd64.deb"
+    state: present
+
+# - name: Get Service Status
+#   ansible.builtin.systemd:
+#     name: grafana-server
+#   register: grafana_service_status
+# - debug:
+#     var: grafana_service_status.status.ActiveState
+
+# - name: Copy grafana.ini
+#   ansible.builtin.template:
+#     src: grafana.ini.j2
+#     dest: /etc/grafana/grafana.ini
+#     owner: root
+#     group: grafana
+#     mode: "0640"
+#   # notify:
+#   #   - "Restart Grafana"
+- name: Start grafana
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: true
+    daemon_reload: true
+    state: started
+
+- name: Get Service Status
+  ansible.builtin.systemd:
+    name: grafana-server
+  register: grafana_service_status
+- debug:
+    var: grafana_service_status.status.ActiveState
+
+- name: Wait grafana full start (pause 40s)
+  ansible.builtin.pause:
+    prompt: "Нажмите Enter для продолжения"
+    seconds: 40
+
+- name: Stop grafana
+  ansible.builtin.systemd:
+    name: grafana-server
+    state: stopped
+  # when:
+  #   - grafana_service_status.status.ActiveState == 'active'
+
+- name: Reset admin password
+  ansible.builtin.shell:
+    cmd: "grafana-cli admin reset-admin-password {{ grafana_admin_password }}"
+  register: result
+- ansible.builtin.debug:
+    msg: "{{ result }}"
+
+#  notify: "Restart Grafana"
+
+- name: Start grafana
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: true
+    daemon_reload: true
+    state: started
+# #  notify: "Restart Grafana"
+
+# - name: Add datasource Prometheus
+#   ansible.builtin.copy:
+#     src: grafana_datasource.yml
+#     dest: /etc/grafana/provisioning/datasources/
+#     owner: root
+#     group: grafana
+#     mode: "0640"
+
+# - name: Create or update Grafana admin user
+#   community.grafana.grafana_user:
+#     # grafana_url: "http://localhost:3000"
+#     url: "http://localhost:3000"
+#     # grafana_user: "admin" # A Grafana user with admin permissions for API interaction
+#     url_username: admin
+#     url_password: admin
+# #    grafana_password: "admin"
+#     name: grafana_admin # "{{ grafana_admin_username }}"
+#     login: "{{ grafana_admin_login }}"
+#     email: "it@octo.com"
+#     password: "{{ grafana_admin_password }}" # This password is for the new 'ansible_admin' user
+#     is_admin: true # Set this to true to make the user an admin
+#     state: present
+#   notify:
+#     - "Restart Grafana"
+    # url_username: admin
+    # url_password: admin
+    # name: "Aministrator"
+    # email: admin@{{ ansible_hostname }}
+    # login: root
+    # password: '{{ grafana_root_password }}'
+    # is_admin: true
+
+- name: Get Service Status
+  ansible.builtin.systemd:
+    name: grafana-server
+  register: grafana_service_status
+- debug:
+    var: grafana_service_status.status.ActiveState
+
+- name: Configure grafana Datasource
+  community.grafana.grafana_datasource:
+    grafana_url: "http://localhost:3000"
+    grafana_user: "{{ grafana_admin_login }}"
+    grafana_password: "{{ grafana_admin_password }}"
+    name: "Prometheus"
+    ds_type: "prometheus"
+    ds_url: "http://localhost:9090"
+    access: proxy
+    is_default: true
+#    uid: "cet0djb2sp69sc"
+    state: present
+  register: datasource_result
+  notify:
+    - "Restart Grafana"
+- name: Datasource info
+  ansible.builtin.debug:
+    msg:
+      "{{ datasource_result }}"
+
+# - name: Copy dashboard template 15172_rev6.json
+#   ansible.builtin.copy:
+#     src: 15172_rev6.json
+#     dest: /etc/grafana/provisioning/dashboards/
+#     owner: root
+#     group: grafana
+#     mode: "0640"
+
+# ansible-galaxy collection install community.grafana
+
+# - name: Add dashboard 15172_rev6
+#   community.grafana.grafana_dashboard:
+#     grafana_url: "http://localhost:3000" # http://grafana.company.com
+# #    grafana_api_key: "{{ grafana_api_key }}"
+#     state: present
+#     commit_message: Updated by ansible
+#     overwrite: true
+# #    uid: "W5KDrdKnz"
+# #   path: /etc/grafana/provisioning/dashboard/15172_rev6.json
+#     path: /vagrant/backups/monitor/15172_rev6.json
+#     datasource_uid: "{{ datasource_result.datasource.uid }}"
+
+- name: Copy dashboard template 22413_rev5.json
+  ansible.builtin.copy:
+    src: 22413_rev5.json
+    dest: /etc/grafana/provisioning/dashboards/
+    owner: root
+    group: grafana
+    mode: "0640"
+  register: reg_dashboard_path
+
+- name: Get reg_dashboard_path
+  ansible.builtin.debug:
+    msg: "{{ reg_dashboard_path }}"
+
+- name: Add dashboard 22413_rev5.json
+  community.grafana.grafana_dashboard:
+    grafana_url: "http://localhost:3000" # http://grafana.company.com
+    grafana_user: "{{ grafana_admin_login }}"
+    grafana_password: "{{ grafana_admin_password }}"
+#    grafana_api_key: "{{ grafana_api_key }}"
+    state: present
+    commit_message: Updated by ansible
+    overwrite: true
+#    uid: "W5KDrdKnz"
+    path: "{{ reg_dashboard_path.dest }}"
+#    path: /etc/grafana/provisioning/dashboards/22413_rev5.json
+#    path: /vagrant/backups/monitor/22413_rev5.json
+  notify:
+    - "Restart Grafana"

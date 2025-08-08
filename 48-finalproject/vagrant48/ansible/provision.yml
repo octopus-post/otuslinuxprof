@@ -1,0 +1,97 @@
+---
+
+- name: Final Project
+  hosts: all
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+    - ./setup_monitoring/defaults/main.yml
+  tasks:
+    - name: Install some packages
+      ansible.builtin.apt:
+        name:
+          - "{{ item }}"
+        state: present
+        update_cache: true
+      with_items:
+        - mc
+        - unzip
+    - name: Disable ufw
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+
+- name: Install node_exporter
+  hosts: all
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_node_exporter
+
+- name: MYSQL-server
+  hosts: nextcloud, mysqlrepl
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_mysql
+
+- name: Setup MySQL-SOURCE
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_mysqlsource
+
+- name: NEXTCLOUD-server
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_nextcloud
+
+- name: Create NEXTCLOUD MySQL-DUMP
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - create_mysql_dump
+
+- name: Setup MySQL-REPLICA
+  hosts: mysqlrepl
+  vars:
+    source_hostname: 'nextcloud'
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_replica
+
+- name: Monitoring-server
+  hosts: monitor
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_monitoring
+
+- name: Install ELK
+  hosts: elk
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_elk
+
+- name: Install file_beat
+  hosts: nextcloud, mysqlrepl, monitor, elk
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_beats

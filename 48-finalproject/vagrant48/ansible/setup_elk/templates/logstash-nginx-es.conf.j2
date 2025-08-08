@@ -1,0 +1,37 @@
+#откуда берет данные
+input {
+    beats {
+        port => 5400
+    }
+}
+
+#что делает с этими данными
+filter {
+ grok {
+   match => [ "message" , "%{COMBINEDAPACHELOG}+%{GREEDYDATA:extra_fields}"]
+   overwrite => [ "message" ]
+ }
+ mutate {
+   convert => ["response", "integer"]
+   convert => ["bytes", "integer"]
+   convert => ["responsetime", "float"]
+ }
+ date {
+   match => [ "timestamp" , "dd/MMM/YYYY:HH:mm:ss Z" ]
+   remove_field => [ "timestamp" ]
+ }
+ useragent {
+   source => "agent"
+ }
+}
+#куда отправляет данные
+output {
+ elasticsearch {
+   hosts => ["http://localhost:9200"]
+   #cacert => '/etc/logstash/certs/http_ca.crt'
+   #ssl => true
+   index => "web_logs-%{+YYYY.MM.dd}"
+   document_type => "nginx_logs"
+ }
+ stdout { codec => rubydebug }
+}

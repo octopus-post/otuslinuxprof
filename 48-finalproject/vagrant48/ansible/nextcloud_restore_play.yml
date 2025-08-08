@@ -1,0 +1,66 @@
+---
+# - hosts: servicenode
+#   vars:
+#     restore_hostname: "nextcloud"
+#     restore_host_ip: "{{ hostvars['nextcloud']['ansible_host'] }}"
+#     dumpfile_name: 'mysqldump_nextcloud_2025-08-02.sql'
+
+- name: Restore server
+  become: true
+  vars:
+    restore_hostname: "nextcloud"
+    restore_host_ip: "{{ hostvars['nextcloud']['ansible_host'] }}"
+  hosts: servicenode
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_restore_node
+
+- name: Install MYSQL-server
+  hosts: servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_mysql
+
+- name: Setup MySQL-SOURCE
+  hosts: servicenode
+  become: true
+  # vars:
+  #   mysqlserver_id: "1"
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_mysqlsource
+
+- name: Restore nextcloud dir and DB
+  hosts: servicenode
+  become: true
+  vars:
+    nextcloud_can_init: False
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_nextcloud
+
+- name: Restore nextcloud dir and DB
+  hosts: servicenode
+  become: true
+  vars:
+    dumpfile_name: 'mysqldump_nextcloud_2025-08-02.sql'
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+    - name: Import task nextcloud_restore
+      include_tasks: install_nextcloud/tasks/nextcloud_restore.yml
+
+- name: Restore replication on mysqlrepl
+  hosts: mysqlrepl
+  vars:
+    source_hostname: 'nextcloud'
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_replica

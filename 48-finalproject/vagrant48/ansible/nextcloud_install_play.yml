@@ -1,0 +1,8 @@
+---
+- name: NEXTCLOUD-server
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_nextcloud

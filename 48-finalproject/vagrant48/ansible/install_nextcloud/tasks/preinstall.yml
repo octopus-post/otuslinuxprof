@@ -1,0 +1,22 @@
+---
+- name: Install nginx, php-modules
+  become: true
+  become_user: root
+  ansible.builtin.apt:
+    name:
+      - "{{ item }}"
+    state: present
+  with_items:
+    - nginx
+    - php-mysql
+    - php
+    - php-gd
+    - php-curl
+    - php-zip
+    - php-dom
+    - php-xml
+    - php-simplexml
+    - php-mbstring
+    - php-intl
+    - php-json
+    - php-fpm

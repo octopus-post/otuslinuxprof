@@ -1,0 +1,6 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for setup_source
+- name: Setup SOURCE
+  include_tasks: setup_source.yml
+  tags: source

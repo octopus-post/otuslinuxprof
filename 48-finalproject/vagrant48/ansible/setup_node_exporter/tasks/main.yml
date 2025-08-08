@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for setup_node_exporter
+- name: Setup node_exporter
+  include_tasks: install_node_exporter.yml
+  tags: install_node_exporter

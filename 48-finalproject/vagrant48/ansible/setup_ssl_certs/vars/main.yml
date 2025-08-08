@@ -1,0 +1,12 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for setup_ssl_certs
+    my_country_name: RU  # Укажите код страны
+    my_state_or_province_name: NSK  # Укажите область/край
+    my_locality_name: nsk  # Укажите город
+    my_organization_name: company  # Укажите название организации
+    my_organizational_unit_name: IT Department  # Укажите подразделение
+    my_email_address: it@octo.loc  # Укажите адрес электронной почты
+    my_key_size: 2048  # Укажите размер ключа
+    my_digest: sha256 # Укажите алгоритм дайджеста
+    my_key_type: RSA

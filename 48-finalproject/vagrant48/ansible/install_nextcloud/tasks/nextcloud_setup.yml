@@ -1,0 +1,152 @@
+---
+- name: Create dir ssl
+  become: true
+  ansible.builtin.file:
+    path: /etc/ssl/{{ ansible_hostname }}
+    state: directory
+    mode: '0755'
+
+- name: Check nextcloud cert status
+  ansible.builtin.stat:
+    path: "{{ ssl_keys_path }}/crt/{{ ansible_hostname }}.loc.crt"
+  register: reg_cert_status
+# - ansible.builtin.debug:
+#     msg: "{{ reg_cert_status }}"
+
+- name: Copy nextcloud SSL certificate file
+  ansible.builtin.copy:
+    src: "{{ ssl_keys_path }}/crt/{{ ansible_hostname }}.loc.crt"
+    dest: "/etc/ssl/{{ ansible_hostname }}/{{ ansible_hostname }}.loc.crt"
+    mode: '0644'
+    owner: root
+    group: root
+    remote_src: true
+  when: reg_cert_status.stat.exists
+
+- name: Copy nextcloud SSL private key file
+  ansible.builtin.copy:
+    src: "{{ ssl_keys_path }}/private/{{ ansible_hostname }}.loc.key"
+    dest: "/etc/ssl/{{ ansible_hostname }}/{{ ansible_hostname }}.loc.key"
+    mode: '0644'
+    owner: root
+    group: root
+    remote_src: true
+  when: reg_cert_status.stat.exists
+
+- name: Set up nextcloud server
+  ansible.builtin.template:
+    src: nextcloud_exp.conf.j2
+    dest: /etc/nginx/sites-available/nextcloud.conf
+    mode: "0644"
+    owner: root
+
+- name: Enable nextcloud
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/nextcloud
+    src: /etc/nginx/sites-available/nextcloud.conf
+    state: link
+
+- name: Disable default nginx path
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+# - name: Download file with check (sha256)
+#   ansible.builtin.get_url:
+#     url: https://download.nextcloud.com/server/releases/nextcloud-{{ nextcloud_version }}.zip
+#     dest: /vagrant/backups/dst/nextcloud/nextcloud-{{ nextcloud_version }}.zip
+#     checksum: '{{ nextcloud_distr_checksum_sha256 }}'
+#     mode: "0600"
+#   register: reg_path_to_distrib
+
+# - name: Print result check
+#   ansible.builtin.debug:
+#     msg: "{{ reg_path_to_distrib.dest }}"
+
+# - name: Check nextcloud dir existence on remote host
+#   ansible.builtin.stat:
+#     path: /var/www/nextcloud
+#   register: reg_dir_info
+
+# - name: Print result check
+#   ansible.builtin.debug:
+#     msg: "Path not exists | reg_dir_info.stat.isdir: {{ (reg_dir_info.stat.isdir | default(False)) }} | reg_dir_info.stat.exists: {{ reg_dir_info.stat.exists }}"
+#   when:
+#     - not reg_dir_info.stat.isdir | default(False)
+
+# - name: Unarchive a file when nextcloud dir is not exists
+#   ansible.builtin.unarchive:
+#     src: "{{ reg_path_to_distrib.dest }}"
+#     dest: /var/www/
+#     remote_src: true
+#   when: not (reg_dir_info.stat.isdir | default(False)) # reg_dir_info.stat.isdir is not defined
+
+# - name: Change permissions
+#   ansible.builtin.file:
+#     path: /var/www/nextcloud
+#     owner: www-data
+#     group: www-data
+#     mode: '0755'
+#     recurse: true
+#   notify:
+#     - "Restart nginx"
+#     - "Restart php"
+
+# # - name: Check nextcloud_data dir existence on remote host
+# #   ansible.builtin.stat:
+# #     path: "{{ nextcloud_data_dir }}/data"
+# #   register: reg_nextcloud_data_dir_info
+
+# # - name: Create nextcloud_data_dir
+# #   ansible.builtin.file:
+# #     path: '{{ nextcloud_data_dir }}/data'
+# #     state: directory
+# #     owner: www-data
+# #     group: www-data
+# #     mode: '0775'
+# #   when: not reg_nextcloud_data_dir_info.stat.exists
+
+# - name: Check NC server status
+#   ansible.builtin.stat:
+#     path: /var/www/nextcloud/config/CAN_INSTALL
+#   register: reg_nc_status
+
+# - name: Get status info
+#   ansible.builtin.debug:
+#     msg: "{{ reg_nc_status.stat.exists }}"
+
+# - name: Initial NC-server
+#   become: true
+#   ansible.builtin.shell:
+#     cmd: "sudo -u www-data php /var/www/nextcloud/occ  \
+#         maintenance:install \
+#         --data-dir='{{ nextcloud_data_dir }}/data' \
+#         --database='mysql' \
+#         --database-name='{{ nextcloud_db }}' \
+#         --database-user='{{ nextcloud_user }}' \
+#         --database-pass='{{ nextcloud_password }}' \
+#         --admin-user='admin' \
+#         --admin-pass='{{ nextcloud_password }}'"
+# #        --data-dir='/var/www/nextcloud/data' \
+#   when: reg_nc_status.stat.exists
+
+# - name: Check NC server status
+#   ansible.builtin.stat:
+#     path: /var/www/nextcloud/config/CAN_INSTALL
+#   register: reg_nc_status
+
+# - name: Add trusted_domains in conf
+#   ansible.builtin.shell:
+#     cmd: "sudo -u www-data php /var/www/nextcloud/occ \
+#         config:system:set \
+#         trusted_domains 1 \
+#         --value='{{ ansible_host }}'"
+#   when: not reg_nc_status.stat.exists
+
+# - name: Add trusted_domains in conf
+#   ansible.builtin.shell:
+#     cmd: "sudo -u www-data php /var/www/nextcloud/occ \
+#         config:system:set \
+#         trusted_domains 2 \
+#         --value='nextcloud.loc'"
+#   when: not reg_nc_status.stat.exists

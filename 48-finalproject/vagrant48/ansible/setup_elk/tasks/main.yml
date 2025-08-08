@@ -1,0 +1,16 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for setup_elk
+- name: Gen ssl certs
+  ansible.builtin.import_role:
+    name: setup_ssl_certs
+  tags: SSL
+
+- include_tasks: install_elasticsearch.yml
+  tags: elasticsearch
+
+- include_tasks: install_kibana.yml
+  tags: kibana
+
+- include_tasks: install_logstash.yml
+  tags: logstash

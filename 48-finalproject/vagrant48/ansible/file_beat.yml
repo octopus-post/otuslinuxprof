@@ -1,0 +1,8 @@
+---
+- name: Install file_beat
+  hosts: nextcloud, mysqlrepl, elk
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_beats

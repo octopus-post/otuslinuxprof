@@ -1,0 +1,107 @@
+---
+- name: Check cert status
+  ansible.builtin.stat:
+    path: "{{ ssl_keys_path }}/crt/{{ ansible_hostname }}.loc.crt"
+  register: reg_cert_status
+
+- name: Get cert status info
+  ansible.builtin.debug:
+    msg: "{{ reg_cert_status.stat.exists }}"
+  when: reg_cert_status.stat.exists
+
+- name: Generate an OpenSSL private key
+  community.crypto.openssl_privatekey:
+    path: "{{ ssl_keys_path }}/private/{{ ansible_hostname }}.loc.key" 
+    size: "{{ my_key_size }}"
+    type: "{{ my_key_type }}"
+    backup: true
+  when: not reg_cert_status.stat.exists
+
+- name: Generate an OpenSSL Certificate Signing Request with Subject information
+  community.crypto.openssl_csr:
+    path: "{{ ssl_keys_path }}/csr/{{ ansible_hostname }}.loc.csr"
+    privatekey_path: "{{ ssl_keys_path }}/private/{{ ansible_hostname }}.loc.key"
+    country_name: "{{ my_country_name }}"
+    organization_name: "{{ my_organization_name }}"
+    email_address: "{{ my_email_address }}"
+    common_name: "{{ ansible_hostname }}.loc"
+  register: csr_result
+  when: not reg_cert_status.stat.exists
+
+- name: Print CSR result
+  ansible.builtin.debug:
+    var: csr_result
+
+# - name: Create CSR
+#   openssl_certificate:
+#     path: "{{ ssl_keys_path }}/ssl/crt/{{ ansible_hostname }}.loc.crt"            #/path/to/your/certificate.crt  # Укажите путь к будущему сертификату
+#     csr_path: "{{ ssl_keys_path }}/csr/{{ ansible_hostname }}.loc.csr"            #/path/to/your/certificate.csr  # Укажите путь к CSR файлу
+#     privatekey_path: "{{ ssl_keys_path }}/private/{{ ansible_hostname }}.loc.key" #/path/to/your/private.key  # Укажите путь к приватному ключу
+#     country_name: "{{ my_country_name }}"  # Укажите код страны
+#     state_or_province_name: "{{ my_state_or_province_name }}"  # Укажите область/край
+#     locality_name: "{{ my_locality_name }}"  # Укажите город
+#     organization_name: "{{ my_organization_name }}"  # Укажите название организации
+#     organizational_unit_name: "{{ my_organizational_unit_name }}"  # Укажите подразделение
+#     #email_address: your.email@example.com  # Укажите адрес электронной почты
+#     common_name: "{{ ansible_hostname }}.loc"  # Укажите полное доменное имя
+#     key_size: "{{ my_key_size}}"  # Укажите размер ключа
+#     digest: "{{ my_digest}}" # Укажите алгоритм дайджеста
+#     provider: ownca
+#     become: true # Запустить от имени суперпользователя
+#     become_user: root # Указать пользователя, от имени которого запускать
+#   register: csr_result
+#   when: not reg_cert_status.stat.exists
+
+# - name: Print CSR result
+#   debug:
+#     var: csr_result
+
+- name: Generate an OpenSSL certificate signed with own CA certificate
+  ansible.builtin.openssl_certificate:
+    path: "{{ ssl_keys_path }}/crt/{{ ansible_hostname }}.loc.crt"
+    csr_path: "{{ ssl_keys_path }}/csr/{{ ansible_hostname }}.loc.csr"
+    ownca_path: "{{ ssl_keys_path }}/crt/rootCA.pem"
+    ownca_privatekey_path: "{{ ssl_keys_path }}/private/rootCA.key"
+    provider: ownca
+  register: reg_crt
+  when: not reg_cert_status.stat.exists
+
+- name: Get certificate info
+  ansible.builtin.openssl_certificate_info:
+    path: "{{ ssl_keys_path }}/crt/{{ ansible_hostname }}.loc.crt"
+    # for valid_at, invalid_at and valid_in
+    # valid_at:
+    #   one_day_ten_hours: "+1d10h"
+    #   fixed_timestamp: 20200331202428Z
+    #   ten_seconds: "+10"
+  register: reg_crt_info
+
+- name: Print certificate info
+  ansible.builtin.debug:
+    var: reg_crt_info
+
+# - name: Create dir
+#   become: true
+#   ansible.builtin.file:
+#     path: /etc/ssl/{{ ansible_hostname }}
+#     state: directory
+#     mode: '0755'
+
+# - name: Copy SSL certificate file
+#   ansible.builtin.copy:
+#     src: "{{ ssl_keys_path }}/crt/{{ ansible_hostname }}.loc.crt"
+#     dest: "/etc/ssl/{{ ansible_hostname }}/{{ ansible_hostname }}.loc.crt"
+#     mode: '0644'
+#     owner: root
+#     group: root
+#     remote_src: true
+
+
+# - name: Copy SSL private key file
+#   ansible.builtin.copy:
+#     src: "{{ ssl_keys_path }}/private/{{ ansible_hostname }}.loc.key"
+#     dest: "/etc/ssl/{{ ansible_hostname }}/{{ ansible_hostname }}.loc.key"
+#     mode: '0644'
+#     owner: root
+#     group: root
+#     remote_src: true

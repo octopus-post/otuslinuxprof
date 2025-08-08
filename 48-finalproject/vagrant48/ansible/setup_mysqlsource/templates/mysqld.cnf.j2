@@ -1,0 +1,12 @@
+[mysqld]
+server-id = {{ mysqlserver_id }}
+log-bin = mysql-bin
+gtid-mode=ON
+enforce-gtid-consistency=ON
+log-replica-updates
+{% if mysqlserver_id == '1' %}
+binlog_format = row
+{% elif mysqlserver_id == '2' %}
+read-only = ON
+relay-log = relay-log-server
+{% endif %}

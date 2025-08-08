@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for setup_restore_node
+# - name: Restore Server
+#   hosts: node1 #"{{ servicenode_hostname }}"
+#   vars:
+#     restore_host_ip: {{ restore_host_ip }}
+#   #   another_variable: 123
+- include_tasks: setup_netplan.yml
+  tags: net

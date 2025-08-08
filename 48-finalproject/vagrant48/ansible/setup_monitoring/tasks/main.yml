@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for setup_monitoring
+
+- name: Gen ssl certs
+  ansible.builtin.import_role:
+    name: setup_ssl_certs
+  tags: SSL
+
+- name: Setup Prometheus
+  include_tasks: install_prometheus.yml
+  tags: Prometheus
+
+- name: Setup Grafana
+  include_tasks: install_grafana.yml
+  tags: Grafana
+
+- name: Setup Alert_manager
+  include_tasks: install_alertmanager.yml
+  tags: Alert_manager
+
+- name: Install nginx
+  include_tasks: install_nginx.yml
+  tags: nginx

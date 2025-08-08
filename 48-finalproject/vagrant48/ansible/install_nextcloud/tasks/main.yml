@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for install_nextcloud
+
+- include_tasks: preinstall.yml
+  tags: install nginx
+
+- include_tasks: create_db.yml
+  tags: set up nextcloud db
+
+- include_tasks: nextcloud_setup.yml
+  tags: start nextcloud server
+
+- include_tasks: nextcloud_install.yml
+  tags: nextcloud install
+  when: "{{ nextcloud_can_init }}"
+
+# - include_tasks: nextcloud_backup.yml
+#   tags: start nextcloud backup
+
+# - include_tasks: gen_ssl_certs.yml
+#   tags: SSL
+
+# - include_tasks: setup_ssl_certs | gen_ssl_certs.yml
+#   tags: SSL
+
+# - include_roles: setup_ssl_certs
+#   tags: SSL
+
+- name: Gen ssl certs
+  ansible.builtin.import_role:
+    name: setup_ssl_certs
+  tags: SSL

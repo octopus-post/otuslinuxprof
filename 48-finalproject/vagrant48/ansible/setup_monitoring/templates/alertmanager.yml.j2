@@ -1,0 +1,21 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 10m
+  repeat_interval: 60m
+  receiver: 'email'
+receivers:
+- name: 'email'
+  email_configs:
+  - to: {{ alertmanager_user }}
+    from: {{ alertmanager_user }}
+    smarthost: {{ alertmanager_smarthost }}
+    auth_username: {{ alertmanager_user }}
+    auth_identity: {{ alertmanager_user}}
+    auth_password: {{ alertmanager_password }}
+    headers:
+      subject: '[Alert] '
+    send_resolved: true

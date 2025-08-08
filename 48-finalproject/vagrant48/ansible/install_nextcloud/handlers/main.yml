@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT-0
+---
+# handlers file for install_nextloud
+
+- name: "Restart nginx"
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+
+- name: "Reload nginx"
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: "Restart php"
+  ansible.builtin.service:
+    name: php8.1-fpm
+    state: restarted

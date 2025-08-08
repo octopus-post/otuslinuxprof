@@ -1,0 +1,43 @@
+---
+- name: Install a logstash-8.9.1-amd64 package
+  ansible.builtin.apt:
+    deb: "{{ distrib_path }}/elk-8.9-deb/logstash-{{ elk_version }}-amd64.deb"
+    state: present
+
+- name: Set up logstash
+  ansible.builtin.template:
+    src: logstash.yml.j2
+    dest: /etc/logstash/logstash.yml
+    mode: "0644"
+    owner: root
+
+- name: Set up logstash conf
+  ansible.builtin.template:
+    src: logstash-nginx-es.conf.j2
+    dest: /etc/logstash/conf.d/logstash-nginx-es.conf
+    mode: "0644"
+    owner: root
+
+- name: Start logstash
+  ansible.builtin.systemd:
+    name: logstash
+    daemon-reload: true
+    enabled: true
+    state: started
+
+# - name: Copy ssl certs
+#   ansible.builtin.copy:
+#     src: /etc/elasticsearch/certs
+#     dest: /etc/logstash/
+#     remote_src: true
+#     directory_mode: true
+#     owner: root
+#     group: kibana
+#     mode: '0600'
+  # notify:
+  #    - "Start elasticsearch"
+
+# apt install logstash
+# systemctl enable logstash.service
+# cp -R /etc/elasticsearch/certs /etc/logstash
+# chown -R root:logstash /etc/logstash/certs

@@ -1,0 +1,11 @@
+.vagrant
+*.vdi
+*.csr
+*.crt
+*.key
+*.pem
+*.deb
+*.tar.gz
+*.zip
+*.sql
+nextcloud

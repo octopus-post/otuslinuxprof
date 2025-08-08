@@ -1,0 +1,10 @@
+---
+- name: backup Nextcloud
+  hosts: nextcloud
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+#   become: true
+    - name: Import nextcloud backups task
+      include_tasks:
+        file: install_nextcloud/tasks/nextcloud_backup.yml

@@ -1,0 +1,27 @@
+---
+- name: Restore server
+  become: true
+  vars:
+    restore_hostname: "monitor"
+    restore_host_ip: "{{ hostvars['monitor']['ansible_host'] }}"
+  hosts: servicenode
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_restore_node
+
+- name: Monitoring-server
+  hosts: servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_monitoring
+
+# - name: Install node_exporter
+#   hosts: all
+#   become: true
+#   vars_files:
+#     - ./vars/variables.yml
+#   roles:
+#     - setup_node_exporter
