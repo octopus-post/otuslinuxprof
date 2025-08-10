@@ -1,0 +1,9 @@
+---
+
+- name: Install node_exporter
+  hosts: nextcloud, servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_mysqlsource

@@ -2,6 +2,8 @@
 - name: backup Nextcloud
   hosts: nextcloud
   become: true
+  vars:
+    dumpfile_name: "mysqldump_{{ inventory_hostname }}_{{ ansible_date_time.date }}.sql"
   vars_files:
     - ./vars/variables.yml
   tasks:

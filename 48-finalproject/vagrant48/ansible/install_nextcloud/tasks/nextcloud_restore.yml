@@ -1,5 +1,9 @@
 ---
 
+# - name: Set maintenance mode on
+#   ansible.builtin.shell:
+#     cmd: "sudo -E -u www-data php /var/www/nextcloud/occ maintenance:mode --on"
+
 - name: Check nextcloud dir existence on remote host
   ansible.builtin.stat:
     path: "{{ nextcloud_data_dir }}"
@@ -27,27 +31,14 @@
     mode: "0755"
     remote_src: true
 
-# - name: Run RESET MASTER
-#   community.mysql.mysql_replication:
-#     mode: resetprimary
-#     login_unix_socket: /var/run/mysqld/mysqld.sock
-
 - name: Drop a MySQL database
   community.mysql.mysql_db:
     name: "{{ nextcloud_db }}"
     state: absent
-#    login_user: root
-#    login_password: your_mysql_root_password
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
-- name: Create nextcloud database
-#  become: true
-#  become_user: root
-  community.mysql.mysql_db:
-    name: "{{ nextcloud_db }}"
-    encoding: utf8mb4
-    state: present
-    login_unix_socket: /var/run/mysqld/mysqld.sock
+- name: Create database
+  include_tasks: create_db.yml
 
 - name: Restore Nextcloud database
   community.mysql.mysql_db:
@@ -79,4 +70,3 @@
 - name: Set file:scan
   ansible.builtin.shell:
     cmd: "sudo -u www-data php /var/www/nextcloud/occ files:scan --all"
-

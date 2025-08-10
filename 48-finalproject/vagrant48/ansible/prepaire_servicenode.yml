@@ -46,7 +46,7 @@
   roles:
     - setup_beats
 
-- name: Install some pkg 
+- name: Install some pkg
   hosts: all
   become: true
   tasks:

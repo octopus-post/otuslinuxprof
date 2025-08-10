@@ -1,10 +1,4 @@
 ---
-# - hosts: servicenode
-#   vars:
-#     restore_hostname: "nextcloud"
-#     restore_host_ip: "{{ hostvars['nextcloud']['ansible_host'] }}"
-#     dumpfile_name: 'mysqldump_nextcloud_2025-08-02.sql'
-
 - name: Restore server
   become: true
   vars:
@@ -15,6 +9,21 @@
     - ./vars/variables.yml
   roles:
     - setup_restore_node
+- name: Install node_exporter
+  hosts: servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_node_exporter
+
+- name: Install file_beat
+  hosts: servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_beats
 
 - name: Install MYSQL-server
   hosts: servicenode
@@ -46,7 +55,7 @@
   hosts: servicenode
   become: true
   vars:
-    dumpfile_name: 'mysqldump_nextcloud_2025-08-05.sql'
+    dumpfile_name: 'mysqldump_nextcloud_2025-08-09.sql'
   vars_files:
     - ./vars/variables.yml
   tasks:
@@ -56,7 +65,8 @@
 - name: Restore replication on mysqlrepl
   hosts: mysqlrepl
   vars:
-    source_hostname: 'nextcloud'
+    source_hostname: "{{ mysql_source_hostname }}"
+    dumpfile_name: 'mysqldump_nextcloud_2025-08-09.sql'
   become: true
   vars_files:
     - ./vars/variables.yml

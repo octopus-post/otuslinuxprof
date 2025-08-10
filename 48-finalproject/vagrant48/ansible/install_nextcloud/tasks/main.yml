@@ -13,7 +13,7 @@
 
 - include_tasks: nextcloud_install.yml
   tags: nextcloud install
-  when: "{{ nextcloud_can_init }}"
+#  when: "{{ nextcloud_can_init }}"
 
 - name: Gen ssl certs
   ansible.builtin.import_role:

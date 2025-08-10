@@ -11,5 +11,5 @@ filebeat.inputs:
   prospector.scanner.exclude_files: ['.gz$']
 
 output.logstash:
-  hosts: ["{{ elk_host_ip }}:5400"]
+  hosts: ["{{ hostvars['elk']['ansible_host'] }}:5400"]
 ###########################################

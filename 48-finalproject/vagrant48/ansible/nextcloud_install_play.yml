@@ -1,4 +1,50 @@
 ---
+- name: Final Project
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+    - ./setup_monitoring/defaults/main.yml
+  tasks:
+    - name: Install some packages
+      ansible.builtin.apt:
+        name:
+          - "{{ item }}"
+        state: present
+        update_cache: true
+      with_items:
+        - mc
+        - unzip
+    - name: Disable ufw
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+
+- name: Install node_exporter
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_node_exporter
+
+- name: Install file_beat
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_beats
+
+- name: MYSQL-server
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_mysql
+
 - name: NEXTCLOUD-server
   hosts: nextcloud
   become: true

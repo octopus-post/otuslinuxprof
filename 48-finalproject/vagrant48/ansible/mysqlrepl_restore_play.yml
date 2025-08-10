@@ -19,8 +19,10 @@
     - install_mysql
 
 - name: Create NEXTCLOUD MySQL-DUMP
-  hosts: nextcloud
+  hosts: "{{ mysql_source_hostname }}"
   become: true
+  vars:
+    dumpfile_name: "mysqldump_{{ mysql_source_hostname }}_{{ ansible_date_time.date }}_hot.sql"
   vars_files:
     - ./vars/variables.yml
   roles:
@@ -30,7 +32,8 @@
   hosts: servicenode
   become: true
   vars:
-    source_hostname: 'nextcloud'
+    source_hostname: "{{ mysql_source_hostname }}"
+    dumpfile_name: "mysqldump_{{ mysql_source_hostname }}_{{ ansible_date_time.date }}_hot.sql"
   vars_files:
     - ./vars/variables.yml
   roles:

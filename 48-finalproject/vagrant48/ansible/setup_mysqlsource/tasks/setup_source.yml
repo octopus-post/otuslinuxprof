@@ -1,14 +1,5 @@
 ---
 
-- name: Create mysql_replica_user
-  community.mysql.mysql_user:
-    name: "{{ mysql_replica_user }}"
-    host: '%'
-    password: "{{ mysql_replica_user_password }}"
-    priv: '*.*:ALL,GRANT'
-    state: present
-    login_unix_socket: /var/run/mysqld/mysqld.sock
-
 - name: Configure mysql
   ansible.builtin.template:
     src: mysqld.cnf.j2
@@ -17,4 +8,18 @@
     group: root
     mode: '0644'
     backup: true
-  notify: "Restart mysql-server"
+#  notify: "Restart mysql-server"
+
+- name: Restart MySQL
+  ansible.builtin.systemd:
+    name: mysql
+    state: restarted
+
+- name: Create mysql_replica_user
+  community.mysql.mysql_user:
+    name: "{{ mysql_replica_user }}"
+    host: '%'
+    password: "{{ mysql_replica_user_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock

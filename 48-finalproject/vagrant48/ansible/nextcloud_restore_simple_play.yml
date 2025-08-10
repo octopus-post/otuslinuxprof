@@ -1,0 +1,89 @@
+---
+- name: Restore server
+  become: true
+  vars:
+    restore_hostname: "nextcloud"
+    restore_host_ip: "{{ hostvars['nextcloud']['ansible_host'] }}"
+  hosts: servicenode
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_restore_node
+
+- name: Create DB
+  hosts: servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+    - name: Import task nextcloud_restore
+      include_tasks: install_nextcloud/tasks/create_db.yml
+
+# - name: Setup MySQL-SOURCE
+#   hosts: servicenode
+#   become: true
+#   vars_files:
+#     - ./vars/variables.yml
+#   roles:
+#     - setup_mysqlsource
+
+- name: Nextcloud setup
+  hosts: servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+    - name: Import task nextcloud_restore
+      include_tasks: install_nextcloud/tasks/nextcloud_setup.yml
+
+- name: Start nginx
+  hosts: servicenode
+  become: true
+  tasks:
+    - name: Start nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+        daemon_reload: true
+
+- name: Restore nextcloud dir and DB
+  hosts: servicenode
+  become: true
+  vars:
+    dumpfile_name: 'mysqldump_nextcloud_2025-08-09.sql'
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+    - name: Import task nextcloud_restore
+      include_tasks: install_nextcloud/tasks/nextcloud_restore.yml
+
+- name: Setup MySQL-SOURCE
+  hosts: servicenode
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_mysqlsource
+
+- name: Create NEXTCLOUD MySQL-DUMP
+  hosts: servicenode
+#  become: true
+  vars:
+#    ansible_host_key_checking: false
+#    source_hostname: servicenode
+    dumpfile_name: "mysqldump_servicenode_{{ ansible_date_time.date }}_hot.sql"
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - create_mysql_dump
+
+- name: Setup MySQL-REPLICA
+  hosts: mysqlrepl
+  vars:
+    source_hostname: servicenode # "{{ mysql_source_hostname }}"
+    dumpfile_name: "mysqldump_servicenode_{{ ansible_date_time.date }}_hot.sql"
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_replica

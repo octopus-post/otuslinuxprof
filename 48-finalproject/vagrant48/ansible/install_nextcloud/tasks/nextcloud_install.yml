@@ -1,4 +1,9 @@
 ---
+- name: Delete nextcloud dir
+  ansible.builtin.file:
+    path: "{{ nextcloud_data_dir }}"
+    state: absent
+
 - name: Download file with check (sha256)
   ansible.builtin.get_url:
     url: https://download.nextcloud.com/server/releases/nextcloud-{{ nextcloud_version }}.zip

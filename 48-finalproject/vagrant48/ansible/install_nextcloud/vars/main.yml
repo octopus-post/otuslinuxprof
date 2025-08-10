@@ -10,4 +10,3 @@ nextcloud_server_name: nextcloud
 # nextcloud_distr_checksum_sha256: 'sha256:42418e8eb3e3db796bc9946e67f1e655a6f1012621cc32a7e6207cff01c0e65d'
 nextcloud_version: '26.0.0'
 nextcloud_distr_checksum_sha256: 'sha256:083fd488b7d4ee8f977bff5ecf3111dc6e72bb0b7f2e6841838dabba57be4068'
-

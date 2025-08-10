@@ -6,6 +6,7 @@
     name:
       - "{{ item }}"
     state: present
+    update_cache:  true
   with_items:
     - nginx
     - php-mysql

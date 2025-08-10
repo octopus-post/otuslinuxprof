@@ -4,7 +4,7 @@
     name: mysql
     state: started
 
-- name: Configure mysql source
+- name: Configure mysql replica
   ansible.builtin.template:
     src: mysqld.cnf.j2
     dest: /etc/mysql/mysql.conf.d/mysqld.cnf
@@ -24,6 +24,11 @@
     mode: stopreplica
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
+- name: Reset mysql replica thread
+  community.mysql.mysql_replication:
+    mode: resetreplicaall
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
 - name: Run RESET MASTER command which will delete all existing binary log files and reset the binary log index file on the primary
   community.mysql.mysql_replication:
     mode: resetprimary
@@ -33,12 +38,22 @@
   community.mysql.mysql_db:
     name: all
     state: import
-    target: "{{ backup_dir }}/{{ source_hostname }}/mysqldump_{{ source_hostname }}_{{ ansible_date_time.date }}.sql"
+    target: "{{ backup_dir }}/{{ source_hostname }}/{{ dumpfile_name }}" # mysqldump_{{ source_hostname }}_{{ ansible_date_time.date }}.sql
     login_unix_socket: /var/run/mysqld/mysqld.sock
+- ansible.builtin.debug:
+    msg: "{{ backup_dir }}/{{ source_hostname }}/{{ dumpfile_name }}"
+
+
+# - name: Reset mysql replica thread
+#   community.mysql.mysql_replication:
+#     mode: resetreplicaall
+#     login_unix_socket: /var/run/mysqld/mysqld.sock
 
 - name: Add to Change replication source to replica server
-  command: mysql -e "CHANGE REPLICATION SOURCE TO SOURCE_HOST='{{ mysql_source_host_ip }}', SOURCE_USER='{{ mysql_replica_user }}', SOURCE_PASSWORD='{{ mysql_replica_user_password }}', SOURCE_AUTO_POSITION = 1, GET_SOURCE_PUBLIC_KEY = 1;"
-
+#  command: mysql -e "CHANGE REPLICATION SOURCE TO SOURCE_HOST='{{ mysql_source_host_ip }}', SOURCE_USER='{{ mysql_replica_user }}', SOURCE_PASSWORD='{{ mysql_replica_user_password }}', SOURCE_AUTO_POSITION = 1, GET_SOURCE_PUBLIC_KEY = 1;"
+  command: mysql -e "CHANGE REPLICATION SOURCE TO SOURCE_HOST='{{ hostvars[source_hostname]['ansible_host']}}', SOURCE_USER='{{ mysql_replica_user }}', SOURCE_PASSWORD='{{ mysql_replica_user_password }}', SOURCE_AUTO_POSITION = 1, GET_SOURCE_PUBLIC_KEY = 1;"
+- ansible.builtin.debug:
+    msg: "{{ hostvars[source_hostname]['ansible_host']}}"
 - name: Start mysql replica thread
   community.mysql.mysql_replication:
     mode: startreplica

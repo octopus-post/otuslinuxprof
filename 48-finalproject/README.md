@@ -7,6 +7,7 @@
     - [Комментарии к выполнению задания:](#комментарии-к-выполнению-задания)
       - [Схема серверов настроенного стенда](#схема-серверов-настроенного-стенда)
       - [Сетевые настройки хостов:](#сетевые-настройки-хостов)
+      - [Структура каталогов](#структура-каталогов)
       - [Описание файлов конфигураций и настроек](#описание-файлов-конфигураций-и-настроек)
   - [Инструкция системному администратору дежурной смены для восстановления работы серверов](#инструкция-системному-администратору-дежурной-смены-для-восстановления-работы-серверов)
     - [Подготовка сервера servicenode](#подготовка-сервера-servicenode)
@@ -63,19 +64,62 @@
 | monitor     | 192.168.57.14 | сервер мониторинга                           |
 | elk         | 192.168.57.15 | сервер логирования                           |
 
+#### Структура каталогов
+```
+.
+├── ansible
+│   ├── /create_mysql_dump
+│   ├── /install_mysql
+│   ├── /install_nextcloud
+│   ├── /setup_beats
+│   ├── /setup_elk
+│   ├── /setup_monitoring
+│   ├── /setup_mysqlsource
+│   ├── /setup_node_exporter
+│   ├── /setup_replica
+│   ├── /setup_restore_node
+│   ├── /setup_ssl_certs
+│   ├── /templates
+│   ├── /vars
+│   ├── elk_restore_play.yml
+│   ├── filebeat_setup.yml
+│   ├── monitoring_restore_play.yml
+│   ├── mysqlrepl_restore_play.yml
+│   ├── mysqlrepl_setup.yml
+│   ├── mysqlsource_setup.yml
+│   ├── nextcloud_backup_play.yml
+│   ├── nextcloud_install_play.yml
+│   ├── nextcloud_restore_play.yml
+│   ├── nextcloud_restore_simple_play.yml
+│   ├── prepaire_servicenode.yml
+│   └── provision.yml
+├── /backups
+│   ├── /dst
+│   ├── /elk
+│   ├── /monitor
+│   ├── /mysql
+│   ├── /nextcloud
+│   ├── /servicenode
+│   └── /ssl
+├── ansible.cfg
+├── hosts
+└── Vagrantfile
+
+```
+
 #### Описание файлов конфигураций и настроек
 
-| Файл проекта                | Назначение                                                                                                            |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Vagrantfile                 | Конфигурация виртуальных серверов стенда                                                                              |
-| provision.yml               | Настройка инфраструктуры всех серверов стенда                                                                         |
-| hosts                       | файл ansible inventory                                                                                                |
-| prepaire_servicenode.yml    | Предварительна подготовка резервного сервера **servicenode** (~6min)                                                  |
-| nextcloud_backup_play.yml   | Резервное копирование сервера **nextcloud** (~3min)                                                                   |
-| nextcloud_restore_play.yml  | Восстановление работы **nextcloud** (~3min)                                                                           |
-| mysqlrepl_restore_play.yml  | Восстановление сервера **mysqlrepl** (~1min)                                                                          |
-| monitoring_restore_play.yml | восстановление сервера **monitor** (~2min)                                                                            |
-| provision.yml               | Плейбук для настройки инфраструктуры серверов стенда. Выполняется при первоначальной настройке после запуска серверов |
+| Файл проекта                      | Назначение                                                                                                            |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Vagrantfile                       | Конфигурация виртуальных серверов стенда                                                                              |
+| provision.yml                     | Настройка инфраструктуры всех серверов стенда                                                                         |
+| hosts                             | файл ansible inventory                                                                                                |
+| prepaire_servicenode.yml          | Предварительна подготовка резервного сервера **servicenode** (~6min)                                                  |
+| nextcloud_backup_play.yml         | Резервное копирование сервера **nextcloud** (~3min)                                                                   |
+| nextcloud_restore_simple_play.yml | Восстановление работы **nextcloud** (~3min)                                                                           |
+| mysqlrepl_restore_play.yml        | Восстановление сервера **mysqlrepl** (~1min)                                                                          |
+| monitoring_restore_play.yml       | восстановление сервера **monitor** (~2min)                                                                            |
+| provision.yml                     | Плейбук для настройки инфраструктуры серверов стенда. Выполняется при первоначальной настройке после запуска серверов |
 
 ---
 ## Инструкция системному администратору дежурной смены для восстановления работы серверов
@@ -89,7 +133,7 @@ cd otuslinuxprof/48-finalproject/vagrant48
 
 ```bash
 # Предварительная установка сервисов на резервном сервере servicenode (~6min)
-ansible-playbook ./ansible/prepaire_servicenode.yml -i ./ansible/hosts --limit "servicenode"
+ansible-playbook ./ansible/prepaire_servicenode.yml --limit "servicenode"
 ```
 _Выполняемые действия на sevicenode:_
 | сервер         | используемая роль/плей                 | выполняемые задачи               |
@@ -113,7 +157,7 @@ _Выполняемые действия на sevicenode:_
 
 ```bash
 # Запуск восстановления работы nextcloud (~3min)
-ansible-playbook ./ansible/nextcloud_restore_play.yml -i ./ansible/hosts
+ansible-playbook ./ansible/nextcloud_restore_simple_play.yml 
 ```
 _Выполняемые действия на servicenode:_
 |     | сервер      | используемая роль  | выполняемые задачи                                                                                                        |
@@ -142,7 +186,7 @@ mysql > SHOW REPLICA STATUS\G;
 2. Запустить плейбук _mysqlrepl_restore_play.yml_
 ```bash
 # Запуск восстановления сервисов на сервере mysqlrepl (~1min)
-ansible-playbook ./ansible/mysqlrepl_restore_play.yml -i ./ansible/hosts
+ansible-playbook ./ansible/mysqlrepl_restore_play.yml
 ```
 _Выполняемые действия на servicenode:_
 |     | сервер      | используемая роль  | выполняемые задачи                                                                        |
@@ -154,7 +198,7 @@ _Выполняемые действия на servicenode:_
 
 
 > Результат: 
-> - Готовый дамп БД mysql сервера nextcloud, 
+> - Готовый дамп БД mysql сервера nextcloud, имя файла в формате ```mysqldump_HOSTNAME_YYYY-MM-DD_hot.sql```
 > - рабочая реплика mysql, на сервере MYSQLREPL проверить статус реплики:
 > 
 ```bash
@@ -167,7 +211,7 @@ mysql > SHOW REPLICA STATUS\G;
 2. Запустить плейбук monitoring_restore_play.yml_
 ```bash
 # Запуск восстановления сервисов на сервере mysqlrepl (~1min)
-ansible-playbook ./ansible/monitoring_restore_play.yml -i ./ansible/hosts
+ansible-playbook ./ansible/monitoring_restore_play.yml
 ```
 _Выполняемые действия на servicenode:_
 |     | сервер      | используемая роль  | выполняемые задачи                                                                                                        |
@@ -189,7 +233,7 @@ _Выполняемые действия на servicenode:_
 2. Запустить плейбук monitoring_restore_play.yml_
 ```bash
 # Запуск восстановления сервисов на сервере mysqlrepl (~1min)
-ansible-playbook ./ansible/elk_restore_play.yml -i ./ansible/hosts
+ansible-playbook ./ansible/elk_restore_play.yml
 ```
 _Выполняемые действия на servicenode:_
 |     | сервер      | используемая роль  | выполняемые задачи                                                                        |
@@ -206,7 +250,7 @@ _Выполняемые действия на servicenode:_
 После запуска всех виртуальных серверов запустить плейбук _provision.yml_
 ```bash
 # Запуск настройки инфраструктуры всех серверов
-ansible-playbook ./ansible/provision.yml  -i ./ansible/hosts
+ansible-playbook ./ansible/provision.yml
 ```
 _Выполняемые действия:_ 
 | сервер         | используемая роль   | выполняемые задачи                                      |

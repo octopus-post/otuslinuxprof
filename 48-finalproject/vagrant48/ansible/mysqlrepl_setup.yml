@@ -1,5 +1,21 @@
 ---
 
+- name: Install node_exporter
+  hosts: mysqlrepl
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_node_exporter
+
+- name: Install file_beat
+  hosts: mysqlrepl
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_beats
+
 - name: MYSQL-server
   hosts: mysqlrepl
   become: true
@@ -10,9 +26,12 @@
 
 - name: Create NEXTCLOUD MySQL-DUMP
   hosts: "{{ mysql_source_hostname }}"
+#  gather_facts: false
 #  become: true
   vars:
-    ansible_host_key_checking: false
+#    ansible_host_key_checking: false
+    source_hostname: "{{ mysql_source_hostname }}"
+    dumpfile_name: "mysqldump_{{ mysql_source_hostname }}_{{ ansible_date_time.date }}_hot.sql"
   vars_files:
     - ./vars/variables.yml
   roles:
@@ -22,16 +41,9 @@
   hosts: mysqlrepl
   vars:
     source_hostname: "{{ mysql_source_hostname }}"
+    dumpfile_name: "mysqldump_{{ mysql_source_hostname }}_{{ ansible_date_time.date }}_hot.sql"
   become: true
   vars_files:
     - ./vars/variables.yml
   roles:
     - setup_replica
-
-- name: Install node_exporter
-  hosts: mysqlrepl
-  become: true
-  vars_files:
-    - ./vars/variables.yml
-  roles:
-    - setup_node_exporter
