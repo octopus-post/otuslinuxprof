@@ -19,14 +19,6 @@
     - name: Import task nextcloud_restore
       include_tasks: install_nextcloud/tasks/create_db.yml
 
-# - name: Setup MySQL-SOURCE
-#   hosts: servicenode
-#   become: true
-#   vars_files:
-#     - ./vars/variables.yml
-#   roles:
-#     - setup_mysqlsource
-
 - name: Nextcloud setup
   hosts: servicenode
   become: true
@@ -50,7 +42,7 @@
   hosts: servicenode
   become: true
   vars:
-    dumpfile_name: 'mysqldump_nextcloud_2025-08-09.sql'
+    dumpfile_name: 'mysqldump_nextcloud_2025-08-14.sql'
   vars_files:
     - ./vars/variables.yml
   tasks:

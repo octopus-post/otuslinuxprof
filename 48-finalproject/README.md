@@ -7,7 +7,6 @@
     - [Комментарии к выполнению задания:](#комментарии-к-выполнению-задания)
       - [Схема серверов настроенного стенда](#схема-серверов-настроенного-стенда)
       - [Сетевые настройки хостов:](#сетевые-настройки-хостов)
-      - [Структура каталогов](#структура-каталогов)
       - [Описание файлов конфигураций и настроек](#описание-файлов-конфигураций-и-настроек)
   - [Инструкция системному администратору дежурной смены для восстановления работы серверов](#инструкция-системному-администратору-дежурной-смены-для-восстановления-работы-серверов)
     - [Подготовка сервера servicenode](#подготовка-сервера-servicenode)
@@ -64,48 +63,6 @@
 | monitor     | 192.168.57.14 | сервер мониторинга                           |
 | elk         | 192.168.57.15 | сервер логирования                           |
 
-#### Структура каталогов
-```
-.
-├── ansible
-│   ├── /create_mysql_dump
-│   ├── /install_mysql
-│   ├── /install_nextcloud
-│   ├── /setup_beats
-│   ├── /setup_elk
-│   ├── /setup_monitoring
-│   ├── /setup_mysqlsource
-│   ├── /setup_node_exporter
-│   ├── /setup_replica
-│   ├── /setup_restore_node
-│   ├── /setup_ssl_certs
-│   ├── /templates
-│   ├── /vars
-│   ├── elk_restore_play.yml
-│   ├── filebeat_setup.yml
-│   ├── monitoring_restore_play.yml
-│   ├── mysqlrepl_restore_play.yml
-│   ├── mysqlrepl_setup.yml
-│   ├── mysqlsource_setup.yml
-│   ├── nextcloud_backup_play.yml
-│   ├── nextcloud_install_play.yml
-│   ├── nextcloud_restore_play.yml
-│   ├── nextcloud_restore_simple_play.yml
-│   ├── prepaire_servicenode.yml
-│   └── provision.yml
-├── /backups
-│   ├── /dst
-│   ├── /elk
-│   ├── /monitor
-│   ├── /mysql
-│   ├── /nextcloud
-│   ├── /servicenode
-│   └── /ssl
-├── ansible.cfg
-├── hosts
-└── Vagrantfile
-
-```
 
 #### Описание файлов конфигураций и настроек
 
@@ -157,7 +114,7 @@ _Выполняемые действия на sevicenode:_
 
 ```bash
 # Запуск восстановления работы nextcloud (~3min)
-ansible-playbook ./ansible/nextcloud_restore_simple_play.yml 
+ansible-playbook ./ansible/restore_nextcloud_simple_play.yml 
 ```
 _Выполняемые действия на servicenode:_
 |     | сервер      | используемая роль  | выполняемые задачи                                                                                                        |
@@ -186,7 +143,7 @@ mysql > SHOW REPLICA STATUS\G;
 2. Запустить плейбук _mysqlrepl_restore_play.yml_
 ```bash
 # Запуск восстановления сервисов на сервере mysqlrepl (~1min)
-ansible-playbook ./ansible/mysqlrepl_restore_play.yml
+ansible-playbook ./ansible/restore_mysqlrepl_play.yml
 ```
 _Выполняемые действия на servicenode:_
 |     | сервер      | используемая роль  | выполняемые задачи                                                                        |
@@ -211,7 +168,7 @@ mysql > SHOW REPLICA STATUS\G;
 2. Запустить плейбук monitoring_restore_play.yml_
 ```bash
 # Запуск восстановления сервисов на сервере mysqlrepl (~1min)
-ansible-playbook ./ansible/monitoring_restore_play.yml
+ansible-playbook ./ansible/restore_monitoring_play.yml
 ```
 _Выполняемые действия на servicenode:_
 |     | сервер      | используемая роль  | выполняемые задачи                                                                                                        |
@@ -232,8 +189,8 @@ _Выполняемые действия на servicenode:_
 1. Убедиться, что сервер servicenode доступен и подготовлен.
 2. Запустить плейбук monitoring_restore_play.yml_
 ```bash
-# Запуск восстановления сервисов на сервере mysqlrepl (~1min)
-ansible-playbook ./ansible/elk_restore_play.yml
+# Запуск восстановления сервисов на сервере elk (~6min)
+ansible-playbook ./ansible/restore_elk_play.yml
 ```
 _Выполняемые действия на servicenode:_
 |     | сервер      | используемая роль  | выполняемые задачи                                                                        |

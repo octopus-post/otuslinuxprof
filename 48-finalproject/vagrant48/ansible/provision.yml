@@ -57,6 +57,8 @@
 - name: Create NEXTCLOUD MySQL-DUMP
   hosts: nextcloud
   become: true
+  vars:
+    dumpfile_name: "mysqldump_{{ mysql_source_hostname }}_{{ ansible_date_time.date }}_hot.sql"
   vars_files:
     - ./vars/variables.yml
   roles:
@@ -65,6 +67,7 @@
 - name: Setup MySQL-REPLICA
   hosts: mysqlrepl
   vars:
+    dumpfile_name: "mysqldump_{{ mysql_source_hostname }}_{{ ansible_date_time.date }}_hot.sql"
     source_hostname: 'nextcloud'
   become: true
   vars_files:

@@ -5,7 +5,14 @@
 - name: Gen ssl certs
   ansible.builtin.import_role:
     name: setup_ssl_certs
-  tags: SSL
+  tags: Gen_certs
+
+- name: Gen ssl certs
+  vars: 
+    ansible_hostname: prometheus
+  ansible.builtin.import_role:
+    name: setup_ssl_certs
+  tags: Gen_certs
 
 - name: Setup Prometheus
   include_tasks: install_prometheus.yml
@@ -19,11 +26,17 @@
   include_tasks: install_alertmanager.yml
   tags: Alert_manager
 
+- name: Copy prometheus cert
+  vars:
+    webserver: elk
+  include_tasks: copy_certs.yml
+  tags: Copy_certs
+
 - name: Copy elk cert
   vars:
     webserver: elk
   include_tasks: copy_certs.yml
-  tags: ssl
+  tags: Copy_certs
 
 - name: Install nginx
   include_tasks: install_nginx.yml

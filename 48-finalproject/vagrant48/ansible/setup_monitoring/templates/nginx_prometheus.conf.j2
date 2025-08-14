@@ -2,8 +2,8 @@ server {
     listen 443 ssl;
     server_name prometheus.loc;
 
-    ssl_certificate /etc/ssl/{{ ansible_hostname }}/monitor.loc.crt;
-    ssl_certificate_key /etc/ssl/{{ ansible_hostname }}/monitor.loc.key;
+    ssl_certificate /etc/ssl/{{ ansible_hostname }}/prometheus.loc.crt;
+    ssl_certificate_key /etc/ssl/{{ ansible_hostname }}/prometheus.loc.key;
 
     location / {
         proxy_pass http://localhost:9090;

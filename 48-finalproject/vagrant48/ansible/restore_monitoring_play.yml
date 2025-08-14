@@ -10,7 +10,7 @@
   roles:
     - setup_restore_node
 
-- name: Monitoring-server
+- name: Install monitoring server
   hosts: servicenode
   become: true
   vars_files:

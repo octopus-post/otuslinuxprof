@@ -52,3 +52,11 @@
     - ./vars/variables.yml
   roles:
     - install_nextcloud
+
+- name: Setup MySQL-SOURCE
+  hosts: nextcloud
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_mysqlsource

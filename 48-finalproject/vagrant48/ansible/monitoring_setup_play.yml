@@ -1,0 +1,25 @@
+---
+
+- name: Install node_exporter
+  hosts: monitor
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_node_exporter
+
+- name: Install file_beat
+  hosts: monitor
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_beats
+
+- name: Monitoring-server
+  hosts: monitor
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - setup_monitoring
