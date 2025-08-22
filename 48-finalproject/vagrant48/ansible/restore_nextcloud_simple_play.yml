@@ -59,10 +59,7 @@
 
 - name: Create NEXTCLOUD MySQL-DUMP
   hosts: servicenode
-#  become: true
   vars:
-#    ansible_host_key_checking: false
-#    source_hostname: servicenode
     dumpfile_name: "mysqldump_servicenode_{{ ansible_date_time.date }}_hot.sql"
   vars_files:
     - ./vars/variables.yml
@@ -72,7 +69,7 @@
 - name: Setup MySQL-REPLICA
   hosts: mysqlrepl
   vars:
-    source_hostname: servicenode # "{{ mysql_source_hostname }}"
+    source_hostname: servicenode 
     dumpfile_name: "mysqldump_servicenode_{{ ansible_date_time.date }}_hot.sql"
   become: true
   vars_files:

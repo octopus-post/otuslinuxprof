@@ -7,7 +7,6 @@ mysql_replica_user_password: 'S0mStrongPa$$word'
 ssl_keys_path: /vagrant/backups/ssl
 distrib_path: /vagrant/backups/dst
 elk_version: '8.9.1'
-#elk_host_ip: 192.168.57.15
 
 nextcloud_db: 'nextcloud'
 nextcloud_user: 'nextcloud'

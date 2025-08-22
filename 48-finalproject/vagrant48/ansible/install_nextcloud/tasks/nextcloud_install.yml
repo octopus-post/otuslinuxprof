@@ -32,7 +32,7 @@
     src: "{{ reg_path_to_distrib.dest }}"
     dest: /var/www/
     remote_src: true
-  when: not (reg_dir_info.stat.isdir | default(False)) # reg_dir_info.stat.isdir is not defined
+  when: not (reg_dir_info.stat.isdir | default(False)) 
 
 - name: Change permissions
   ansible.builtin.file:

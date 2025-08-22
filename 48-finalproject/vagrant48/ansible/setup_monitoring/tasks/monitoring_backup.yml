@@ -1,0 +1,25 @@
+---
+
+- name: Copy site config / monitor
+  ansible.builtin.copy:
+    src: /etc/nginx/sites-available/monitor.conf
+    dest: "{{ backup_dir }}/{{ inventory_hostname }}/monitor.conf"
+    mode: '0644'
+    owner: root
+    remote_src: true
+
+- name: Copy site config / prometheus
+  ansible.builtin.copy:
+    src: /etc/nginx/sites-available/prometheus.conf
+    dest: "{{ backup_dir }}/{{ inventory_hostname }}/prometheus.conf"
+    mode: '0644'
+    owner: root
+    remote_src: true
+
+- name: Copy site config / elastic
+  ansible.builtin.copy:
+    src: /etc/nginx/sites-available/elastic.conf
+    dest: "{{ backup_dir }}/{{ inventory_hostname }}/elastic.conf"
+    mode: '0644'
+    owner: root
+    remote_src: true

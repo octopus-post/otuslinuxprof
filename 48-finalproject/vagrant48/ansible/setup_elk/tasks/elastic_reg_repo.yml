@@ -4,8 +4,11 @@
     name: "{{ elasticsearch_repo_name }}"
     state: present
     type: fs
-    settings:
-      location: "{{ elasticsearch_repo }}" # Path accessible by all master and data nodes
-    host: "{{ elasticsearch_host }}"
-    port: "{{ elasticsearch_port }}"
+#    settings:
+    location: "{{ elasticsearch_repo }}" # Path accessible by all master and data nodes
+    login_hosts: "{{ elasticsearch_host }}"
+    login_port: "{{ elasticsearch_port }}"
+    login_user: "{{ elastic_user }}"
+    login_password: "{{ elastic_password }}"
+
     # Add authentication details if required

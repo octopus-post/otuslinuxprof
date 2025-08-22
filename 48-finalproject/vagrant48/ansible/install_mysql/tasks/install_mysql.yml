@@ -1,5 +1,4 @@
 ---
-
 - name: Install MySQL, Python Installs Packages (pip)
   become: true
   ansible.builtin.apt:
@@ -10,10 +9,9 @@
   with_items:
     - mysql-server
     - pip
-  #  - unzip
-
+  
 - name: Make sure pymysql is present
-  become: true # needed if the other tasks are not played as root
+  become: true 
   ansible.builtin.pip:
     name: pymysql
     state: present

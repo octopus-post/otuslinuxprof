@@ -1,5 +1,4 @@
 ---
-
 - name: Final Project
   hosts: all
   become: true

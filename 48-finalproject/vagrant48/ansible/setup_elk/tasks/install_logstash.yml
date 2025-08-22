@@ -3,6 +3,7 @@
   ansible.builtin.apt:
     deb: "{{ distrib_path }}/elk-8.9-deb/logstash-{{ elk_version }}-amd64.deb"
     state: present
+  tags: install
 
 - name: Set up logstash
   ansible.builtin.template:

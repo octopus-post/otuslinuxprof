@@ -35,6 +35,7 @@
   ansible.builtin.apt:
     deb: "{{ distrib_path }}/elk-8.9-deb/kibana-{{ elk_version }}-amd64.deb"
     state: present
+  tags: install
 
 - name: Delete line elasticsearch.hosts
   ansible.builtin.lineinfile:

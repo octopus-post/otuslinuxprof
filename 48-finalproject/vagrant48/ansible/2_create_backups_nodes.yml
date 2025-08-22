@@ -1,0 +1,46 @@
+---
+- name: backup Nextcloud
+  hosts: nextcloud
+  become: true
+  vars:
+    dumpfile_name: "mysqldump_{{ inventory_hostname }}_{{ ansible_date_time.date }}.sql"
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+    - name: Import nextcloud backups task
+      include_tasks:
+        file: install_nextcloud/tasks/nextcloud_backup.yml
+
+- name: Create mysqlrepl backup
+  hosts: mysqlrepl
+  become: true
+  vars:
+    dumpfile_name: "mysqldump_mysqlrepl_{{ ansible_date_time.date }}.sql"
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - create_mysql_dump
+
+- name: Backup mysqlrepl config
+  hosts: mysqlrepl
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+  - name: Backup mysqlrepl config
+    ansible.builtin.copy:
+      src: /etc/mysql/mysql.conf.d/mysqld.cnf
+      dest: "{{ backup_dir }}/mysqlrepl/mysqld.cnf"
+      mode: '0644'
+      owner: root
+      remote_src: true
+
+- name: Backup monitoring
+  hosts: monitor
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+    - name: Import monitor backups task
+      include_tasks:
+        file: setup_monitoring/tasks/monitoring_backup.yml

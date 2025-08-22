@@ -1,5 +1,5 @@
 [servers]
-servicenode ansible_host=192.168.57.11 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/servicenode/virtualbox/private_key mysqlserver_id=3      
+#servicenode ansible_host=192.168.57.11 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/servicenode/virtualbox/private_key mysqlserver_id=3      
 nextcloud   ansible_host=192.168.57.12 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/nextcloud/virtualbox/private_key   mysqlserver_id=1
 mysqlrepl   ansible_host=192.168.57.13 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/mysqlrepl/virtualbox/private_key   mysqlserver_id=2
 monitor     ansible_host=192.168.57.14 ansible_user=vagrant ansible_ssh_private_key_file=./.vagrant/machines/monitor/virtualbox/private_key

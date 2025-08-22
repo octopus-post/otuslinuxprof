@@ -1,5 +1,4 @@
 ---
-
 - name: Install node_exporter
   hosts: nextcloud, servicenode
   become: true

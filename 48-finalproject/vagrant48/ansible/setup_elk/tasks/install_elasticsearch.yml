@@ -1,9 +1,9 @@
 ---
-
 - name: Install a elasticsearch-8.9.1-amd64 package
   ansible.builtin.apt:
     deb: "{{ distrib_path }}/elk-8.9-deb/elasticsearch-{{ elk_version }}-amd64.deb"
     state: present
+  tags: install
 
 - name: Set up elasticsearch server
   ansible.builtin.template:
@@ -11,6 +11,7 @@
     dest: /etc/elasticsearch/elasticsearch.yml
     mode: "0644"
     owner: root
+  tags: setup
 
 - name: Set up jvm
   ansible.builtin.template:
@@ -18,15 +19,7 @@
     dest: /etc/elasticsearch/jvm.options.d/jvm.options
     mode: "0644"
     owner: root
-
-# - name: Run password reset
-#   command: "/usr/share/elasticsearch/bin/elasticsearch-reset-password -u {{ elastic_user }} -i"
-#   args:
-#     stdin: "y\n{{ elastic_password }}\n{{ elastic_password }}\n"
-
-# - name: Display the elastic cluster password.
-#   ansible.builtin.debug:
-#     msg: "New password: {{ elastic_password }}"
+  tags: setup
 
 - name: Restart elasticsearch
   ansible.builtin.systemd:
@@ -34,26 +27,4 @@
     daemon-reload: true
     state: restarted
     enabled: true
-
-# - name: Reset the password of the elastic built-in superuser with
-#   ansible.builtin.shell:
-#     cmd: '/usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -b'
-#   register: reg_elastic_pass
-
-# - name: Reset elasticsearch_user password
-#   ansible.builtin.debug:
-#     msg: "{{ reg_elastic_pass.stdout_lines[-1] }}"
-
-# - name: Push password
-#   vars:
-#     my_password: "{{ reset_cmd.stdout_lines[-1]
-#       | regex_replace('^New value: (.*)$', '\\1') }}"
-
-
-# - name: Generate an enrollment token for Kibana instances with
-#   ansible.builtin.shell:
-#     cmd: '/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana'
-
-# - name: Generate an enrollment token for Elasticsearch nodes with
-#   ansible.builtin.shell:
-#     cmd: '/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node'
+  tags: restart

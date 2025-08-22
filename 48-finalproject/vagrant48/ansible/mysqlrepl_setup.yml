@@ -1,5 +1,4 @@
 ---
-
 - name: Install node_exporter
   hosts: mysqlrepl
   become: true
@@ -26,10 +25,7 @@
 
 - name: Create NEXTCLOUD MySQL-DUMP
   hosts: "{{ mysql_source_hostname }}"
-#  gather_facts: false
-#  become: true
   vars:
-#    ansible_host_key_checking: false
     source_hostname: "{{ mysql_source_hostname }}"
     dumpfile_name: "mysqldump_{{ mysql_source_hostname }}_{{ ansible_date_time.date }}_hot.sql"
   vars_files:

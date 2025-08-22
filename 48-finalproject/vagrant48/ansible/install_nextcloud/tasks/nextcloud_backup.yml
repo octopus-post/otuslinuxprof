@@ -4,14 +4,22 @@
   ansible.builtin.shell:
     cmd: "sudo -E -u www-data php {{ nextcloud_data_dir }}/occ maintenance:mode --on"
 
-- name: Create dump
+- name: Copy nginx config
+  ansible.builtin.copy:
+    src: /etc/nginx/sites-available/nextcloud.conf
+    dest: "{{ nextcloud_backup_dir }}/nextcloud.conf"
+    mode: '0644'
+    owner: root
+    remote_src: true
+
+- name: Create DB dump
 #  become: true
   include_tasks:
     file: create_mysql_dump/tasks/create_mysql_dump.yml
 
 - name: Check NC backup dir status
   ansible.builtin.stat:
-    path: "{{ nextcloud_backup_dir }}/nextcloud"
+    path: "{{ nextcloud_backup_dir }}/nextcloud_{{ ansible_date_time.date }}"
   register: reg_nc_backup_status
 
 - name: Check nextcloud dir
@@ -22,7 +30,7 @@
   become: true
   ansible.builtin.copy:
     src: "{{ nextcloud_data_dir }}"
-    dest: "{{ nextcloud_backup_dir }}"
+    dest: "{{ nextcloud_backup_dir }}/nextcloud_{{ ansible_date_time.date }}"
     owner: www-data
     group: www-data
     mode: "0755"

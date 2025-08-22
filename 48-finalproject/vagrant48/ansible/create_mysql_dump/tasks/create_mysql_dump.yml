@@ -5,7 +5,7 @@
     login_user: "{{ nextcloud_user }}"
     login_password: "{{ nextcloud_password }}"
     query: "FLUSH TABLES WITH READ LOCK;"
-  delegate_to: "{{ inventory_hostname }}" # Or a specific database host
+  delegate_to: "{{ inventory_hostname }}"
 
 
 - name: Run RESET MASTER command which will delete all existing binary log files and reset the binary log index file on the primary
@@ -20,10 +20,7 @@
     state: dump
     name: all
     target: "{{ backup_dir }}/{{ inventory_hostname }}/{{ dumpfile_name }}"    
-#    target: "{{ backup_dir }}/{{ source_hostname }}/{{ dumpfile_name }}"
-    #mysqldump_{{ inventory_hostname }}_{{ ansible_date_time.date }}.sql
     master_data: 2
- #    primary_auto_position: false
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
 - name: Apply global read lock
@@ -31,4 +28,4 @@
     login_user: "{{ nextcloud_user }}"
     login_password: "{{ nextcloud_password }}"
     query: UNLOCK TABLES;
-  delegate_to: "{{ inventory_hostname }}" # Or a specific database host
+  delegate_to: "{{ inventory_hostname }}"

@@ -1,0 +1,73 @@
+---
+- name: Final Project
+  hosts: all
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+    - ./setup_monitoring/defaults/main.yml
+  tasks:
+    - name: Install some packages
+      ansible.builtin.apt:
+        name:
+          - "{{ item }}"
+        state: present
+        update_cache: true
+      with_items:
+        - mc
+        - unzip
+    - name: Disable ufw
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+
+- name: Install nginx
+  hosts: nextcloud, monitor
+  become: true
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name:
+          - nginx
+        state: present
+        update_cache: true
+
+- name: MYSQL-server
+  hosts: nextcloud, mysqlrepl
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  roles:
+    - install_mysql
+
+- name: Preinstall mysql, php-modules
+  hosts: nextcloud
+  become: true
+  tasks:
+    - name: Install some packages
+      ansible.builtin.include_tasks:
+        file: install_nextcloud/tasks/preinstall.yml
+
+- name: Final Project
+  hosts: elk
+  become: true
+  vars_files:
+    - ./vars/variables.yml
+  tasks:
+  - name: Install a elasticsearch-8.9.1-amd64 package
+    ansible.builtin.apt:
+      deb: "{{ distrib_path }}/elk-8.9-deb/elasticsearch-{{ elk_version }}-amd64.deb"
+      state: present
+    tags: install
+
+  - name: Install a kibana-8.9.1-amd64 package
+    ansible.builtin.apt:
+      deb: "{{ distrib_path }}/elk-8.9-deb/kibana-{{ elk_version }}-amd64.deb"
+      state: present
+    tags: install
+
+  - name: Install a logstash-8.9.1-amd64 package
+    ansible.builtin.apt:
+      deb: "{{ distrib_path }}/elk-8.9-deb/logstash-{{ elk_version }}-amd64.deb"
+      state: present
+    tags: install
