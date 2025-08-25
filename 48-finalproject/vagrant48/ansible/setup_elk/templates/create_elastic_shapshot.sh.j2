@@ -1,0 +1,4 @@
+#!/bin/sh
+DT=`date +"%Y%m%d%H:%M:%S"`
+curl -XPUT http://localhost:9200/_snapshot/{{ elasticsearch_repo_name }}/snapshot_$DT?wait_for_completion=false -H 'Content-Type: application/json' -d '{"indices":"*"}'
+exit 1

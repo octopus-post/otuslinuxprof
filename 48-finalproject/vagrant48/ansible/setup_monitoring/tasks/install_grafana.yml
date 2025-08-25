@@ -53,7 +53,7 @@
 - name: Wait grafana full start (pause 40s)
   ansible.builtin.pause:
     prompt: "Нажмите Enter для продолжения"
-    seconds: 40
+    seconds: 20
 
 - name: Stop grafana
   ansible.builtin.systemd:

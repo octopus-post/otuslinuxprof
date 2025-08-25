@@ -117,10 +117,27 @@
     group: prometheus
     mode: '0755'
 
-- name: Enable prom
+- name: Enable Prometheus
   ansible.builtin.service:
     name: prometheus
     enabled: true
     state: started
   notify:
     - "Start Prometheus"
+
+- name: Copy backup_script to remote host
+  ansible.builtin.copy:
+    src: copy_prometheus_snapshot.sh
+    dest: /var/lib/prometheus/copy_prometheus_snapshot.sh
+    owner: root
+    mode: '0655'
+
+- name: Add cron snapshot to every day
+  ansible.builtin.cron:
+    name: Run script every day
+    minute: '*/5'
+#    minute: "0"
+#    hour: "0"
+    job: '/var/lib/prometheus/copy_prometheus_snapshot.sh'
+    user: root
+    state: present

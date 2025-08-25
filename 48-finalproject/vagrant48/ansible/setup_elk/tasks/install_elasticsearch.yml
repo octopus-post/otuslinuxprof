@@ -13,6 +13,15 @@
     owner: root
   tags: setup
 
+- name: Create backups dir
+  ansible.builtin.file:
+    dest: "{{ elasticsearch_repo }}"
+    state: directory
+    mode: '0644'
+    owner: root
+    group: root
+  tags: setup
+
 - name: Set up jvm
   ansible.builtin.template:
     src: elasticsearch_jvm.option.j2
@@ -28,3 +37,24 @@
     state: restarted
     enabled: true
   tags: restart
+
+- name: Create elastic snapshot repo
+  ansible.builtin.shell:
+    cmd: "curl -XPUT 'http://localhost:9200/_snapshot/{{ elasticsearch_repo_name }}' -H 'Content-Type: application/json' -d '{\"type\": \"fs\", \"settings\": {\"location\": \"{{ elasticsearch_repo }}\", \"compress\": true }}'"
+
+- name: Copy elastic policy config
+  ansible.builtin.template:
+    src: create_elastic_shapshot.sh.j2
+    dest: /var/lib/elasticsearch/create_elastic_shapshot.sh
+    owner: root
+    mode: '0655'
+
+- name: Add cron snapshot to every day
+  ansible.builtin.cron:
+    name: Run script every day
+    minute: '*/5'
+#    minute: "0"
+#    hour: "0"
+    job: '/var/lib/elasticsearch/create_elastic_shapshot.sh'
+    user: root
+    state: present

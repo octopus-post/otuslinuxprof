@@ -15,6 +15,7 @@
       with_items:
         - mc
         - unzip
+        - jq
     - name: Disable ufw
       ansible.builtin.systemd:
         name: ufw

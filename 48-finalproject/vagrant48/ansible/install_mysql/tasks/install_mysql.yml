@@ -9,9 +9,9 @@
   with_items:
     - mysql-server
     - pip
-  
+
 - name: Make sure pymysql is present
-  become: true 
+  become: true
   ansible.builtin.pip:
     name: pymysql
     state: present

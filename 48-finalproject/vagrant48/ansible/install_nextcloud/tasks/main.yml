@@ -2,8 +2,8 @@
 ---
 # tasks file for install_nextcloud
 
-- include_tasks: preinstall.yml
-  tags: install nginx
+# - include_tasks: preinstall.yml
+#   tags: install nginx
 
 - include_tasks: create_db.yml
   tags: set up nextcloud db

@@ -31,5 +31,5 @@ elastic_password: 'S0beGe4Ur=ACHfIgkdkB'
 
 elasticsearch_host: 'localhost'
 elasticsearch_port: '9200'
-elasticsearch_repo: '/tmp/backup/elasticsearch'
-elasticsearch_repo_name: 'elk_backups_repo'
+elasticsearch_repo: '/tmp/backup/elastic'
+elasticsearch_repo_name: 'repo'

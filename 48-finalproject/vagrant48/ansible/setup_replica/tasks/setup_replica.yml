@@ -58,3 +58,20 @@
   community.mysql.mysql_replication:
     mode: startreplica
     login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Copy backup script
+  ansible.builtin.template:
+    src: create_mysqlrepl_backup.sh
+    dest: /var/lib/mysql/create_mysqlrepl_backup.sh
+    owner: root
+    mode: '0655'
+
+- name: Add backup script to cron
+  ansible.builtin.cron:
+    name: Run script every day
+    minute: '*/5'
+#    minute: "0"
+#    hour: "0"
+    job: '/var/lib/mysql/create_mysqlrepl_backup.sh'
+    user: root
+    state: present
